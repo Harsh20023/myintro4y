@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,700;1,600&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-dm-sans: 'DM Sans', sans-serif;
+  --font-playfair: 'Playfair Display', serif;
+  --font-dm-mono: 'DM Mono', monospace;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-900 font-sans;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-ink-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-ink-400; }
+}
+
+@layer components {
+  .tool-card {
+    @apply bg-white rounded-2xl border border-ink-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all duration-200 cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white font-medium rounded-xl
+           hover:bg-brand-700 active:scale-[0.98] transition-all duration-150 text-sm;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 bg-white text-ink-700 font-medium rounded-xl
+           border border-ink-200 hover:bg-ink-50 hover:border-ink-300 active:scale-[0.98] transition-all duration-150 text-sm;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-ink-600 font-medium rounded-lg
+           hover:bg-ink-100 hover:text-ink-900 transition-all duration-150 text-sm;
+  }
+
+  .input-base {
+    @apply w-full px-3.5 py-2.5 bg-white border border-ink-200 rounded-xl text-ink-900 text-sm
+           placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+           transition-all duration-150;
+  }
+
+  .label-base {
+    @apply block text-xs font-medium text-ink-500 uppercase tracking-wider mb-1.5;
+  }
+
+  .section-tag {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 text-xs font-medium rounded-full border border-brand-100;
+  }
+}
+
+/* Print styles for invoice */
+@media print {
+  body { background: white !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  #invoice-preview { box-shadow: none !important; border: none !important; }
+}

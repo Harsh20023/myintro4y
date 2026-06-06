@@ -7,6 +7,8 @@ import { Menu, X, Zap } from 'lucide-react'
 const tools = [
   { label: 'Invoice Generator', href: '/tools/invoice-generator' },
   { label: 'GST Calculator',    href: '/tools/gst-calculator' },
+    { label: 'GST Late Fee Calculator', href: '/tools/gst-late-fee-calculator' },
+
 ]
 
 export function Navbar() {

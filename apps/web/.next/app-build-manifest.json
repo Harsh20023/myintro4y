@@ -1,20 +1,61 @@
 {
   "pages": {
-    "/tools/invoice-generator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/invoice-generator/page.js"
+    "/_not-found/page": [
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/app/_not-found/page-79b7b294820fde57.js"
     ],
     "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/css-src_styles_globals_css.css",
-      "static/chunks/app/layout.js"
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/css/0800f8e06a482c06.css",
+      "static/chunks/app/layout-273874ce0310b12b.js"
     ],
     "/tools/gst-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/gst-calculator/page.js"
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/121-e1a49d2813bee60c.js",
+      "static/chunks/app/tools/gst-calculator/page-ab3ffd9b82a30eeb.js"
+    ],
+    "/tools/invoice-generator/page": [
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/89ddd23d-dfdc2b2807db06dd.js",
+      "static/chunks/da458701-80178aaba59bb2e3.js",
+      "static/chunks/121-e1a49d2813bee60c.js",
+      "static/chunks/453-5c41de135951597f.js",
+      "static/chunks/app/tools/invoice-generator/page-b889349d00cbdce0.js"
+    ],
+    "/tools/gst-late-fee-calculator/page": [
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/121-e1a49d2813bee60c.js",
+      "static/chunks/app/tools/gst-late-fee-calculator/page-444e27c9b47b2f2e.js"
+    ],
+    "/(marketing)/page": [
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/121-e1a49d2813bee60c.js",
+      "static/chunks/app/(marketing)/page-9608555720db0df7.js"
+    ],
+    "/(marketing)/layout": [
+      "static/chunks/webpack-b660a950544f8112.js",
+      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
+      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/app/(marketing)/layout-0a261b4b116ff16a.js"
     ]
   }
 }

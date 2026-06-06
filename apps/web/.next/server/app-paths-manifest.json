@@ -1,4 +1,7 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/tools/gst-calculator/page": "app/tools/gst-calculator/page.js",
   "/tools/invoice-generator/page": "app/tools/invoice-generator/page.js",
-  "/tools/gst-calculator/page": "app/tools/gst-calculator/page.js"
+  "/tools/gst-late-fee-calculator/page": "app/tools/gst-late-fee-calculator/page.js",
+  "/(marketing)/page": "app/(marketing)/page.js"
 }

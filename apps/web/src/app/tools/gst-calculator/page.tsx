@@ -15,7 +15,11 @@ export default function GSTCalculatorPage() {
       description="Calculate GST instantly. Supports all slabs — 5%, 12%, 18%, 28%. CGST+SGST or IGST."
       breadcrumb="GST Calculator"
       badge="Free"
-      relatedTools={[{ label: 'Invoice Generator', href: '/tools/invoice-generator' }]}
+      // relatedTools={[{ label: 'Invoice Generator', href: '/tools/invoice-generator' }]}
+      relatedTools={[
+        { label: 'Invoice Generator',    href: '/tools/invoice-generator' },
+        { label: 'GST Late Fee Calculator', href: '/tools/gst-late-fee-calculator' },
+      ]}
     >
       <GSTCalculator />
 

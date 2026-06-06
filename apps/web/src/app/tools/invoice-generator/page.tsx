@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { ToolLayout } from '@/components/layout/ToolLayout'
-import { InvoiceGenerator } from '@/components/tools/InvoiceGenerator'
+import { InvoiceGenerator}  from '@/components/tools/InvoiceGenerator'
 
 export const metadata: Metadata = {
   title: 'Free Invoice Generator — GST Invoice Online',
@@ -15,7 +15,11 @@ export default function InvoiceGeneratorPage() {
       description="Create professional GST-compliant invoices in seconds. Download as PDF, print, or share."
       breadcrumb="Invoice Generator"
       badge="Free"
-      relatedTools={[{ label: 'GST Calculator', href: '/tools/gst-calculator' }]}
+      // relatedTools={[{ label: 'GST Calculator', href: '/tools/gst-calculator' }]}
+       relatedTools={[
+        { label: 'GST Calculator',    href: '/tools/gst-calculator' },
+        { label: 'GST Late Fee Calculator', href: '/tools/gst-late-fee-calculator' },
+      ]}
     >
       <InvoiceGenerator />
 

@@ -1,38 +1,19 @@
 {
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> canvg": {
-    "id": "../../../node_modules/jspdf/dist/jspdf.es.min.js -> canvg",
+    "id": 242,
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_canvg_lib_index_es_js.js"
+      "static/chunks/425a1fef.872865170ee1b331.js",
+      "static/chunks/55.5399252258b4ca73.js"
     ]
   },
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> dompurify": {
-    "id": "../../../node_modules/jspdf/dist/jspdf.es.min.js -> dompurify",
+    "id": 6742,
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_dompurify_dist_purify_js.js"
+      "static/chunks/742.b301784bd6106afb.js"
     ]
   },
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> html2canvas": {
-    "id": "../../../node_modules/jspdf/dist/jspdf.es.min.js -> html2canvas",
-    "files": [
-      "static/chunks/_app-pages-browser_node_modules_html2canvas_dist_html2canvas_js.js"
-    ]
-  },
-  "components/tools/InvoiceGenerator.tsx -> @/lib/logic/pdf": {
-    "id": "components/tools/InvoiceGenerator.tsx -> @/lib/logic/pdf",
-    "files": [
-      "static/chunks/_app-pages-browser_src_lib_logic_pdf_ts.js"
-    ]
-  },
-  "lib/logic/pdf.ts -> jspdf": {
-    "id": "lib/logic/pdf.ts -> jspdf",
-    "files": [
-      "static/chunks/_app-pages-browser_node_modules_jspdf_dist_jspdf_es_min_js.js"
-    ]
-  },
-  "lib/logic/pdf.ts -> jspdf-autotable": {
-    "id": "lib/logic/pdf.ts -> jspdf-autotable",
-    "files": [
-      "static/chunks/_app-pages-browser_node_modules_jspdf-autotable_dist_jspdf_plugin_autotable_js.js"
-    ]
+    "id": 5922,
+    "files": []
   }
 }

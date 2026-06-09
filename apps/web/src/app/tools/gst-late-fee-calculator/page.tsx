@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { ToolLayout } from '@/components/layout/ToolLayout'
 import { GSTLateFeeCalculator } from '@/components/tools/GSTLateFeeCalculator'
+import { ToolGate } from '@/components/tools/ToolGate'
 
 export const metadata: Metadata = {
   title: 'GST Late Fee & Interest Calculator India — Free',
@@ -20,7 +21,7 @@ export default function GSTLateFeePage() {
         { label: 'Invoice Generator', href: '/tools/invoice-generator' },
       ]}
     >
-      <GSTLateFeeCalculator />
+      <ToolGate><GSTLateFeeCalculator /></ToolGate>
     </ToolLayout>
   )
 }

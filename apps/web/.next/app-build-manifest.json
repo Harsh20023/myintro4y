@@ -1,59 +1,108 @@
 {
   "pages": {
     "/_not-found/page": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
-      "static/chunks/app/_not-found/page-79b7b294820fde57.js"
+      "static/chunks/app/_not-found/page-e1ff8fe55f57777a.js"
     ],
     "/layout": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
-      "static/css/0800f8e06a482c06.css",
-      "static/chunks/app/layout-273874ce0310b12b.js"
+      "static/css/53d487c3369a5d0e.css",
+      "static/chunks/app/layout-be7006fc2b2c6473.js"
+    ],
+    "/signup/page": [
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/14-c4848e7a897520b4.js",
+      "static/chunks/app/signup/page-5532b7fa7ea0a4c8.js"
+    ],
+    "/auth/callback/page": [
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/app/auth/callback/page-e787282545599a6c.js"
+    ],
+    "/login/page": [
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/14-c4848e7a897520b4.js",
+      "static/chunks/app/login/page-78d8534af3368314.js"
+    ],
+    "/verify-otp/page": [
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/app/verify-otp/page-64aa321ea3f9bec3.js"
     ],
     "/tools/gst-calculator/page": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
-      "static/chunks/121-e1a49d2813bee60c.js",
-      "static/chunks/app/tools/gst-calculator/page-ab3ffd9b82a30eeb.js"
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/273-fbb1ec2ec2f28b80.js",
+      "static/chunks/406-6dccfc8a4d3de455.js",
+      "static/chunks/app/tools/gst-calculator/page-95640e59f411234c.js"
     ],
     "/tools/invoice-generator/page": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
-      "static/chunks/89ddd23d-dfdc2b2807db06dd.js",
+      "static/chunks/89ddd23d-71cd4a61ec4b3087.js",
       "static/chunks/da458701-80178aaba59bb2e3.js",
-      "static/chunks/121-e1a49d2813bee60c.js",
-      "static/chunks/453-5c41de135951597f.js",
-      "static/chunks/app/tools/invoice-generator/page-b889349d00cbdce0.js"
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/362-41304c8476662ffe.js",
+      "static/chunks/665-cd5f933eb4264f42.js",
+      "static/chunks/273-fbb1ec2ec2f28b80.js",
+      "static/chunks/406-6dccfc8a4d3de455.js",
+      "static/chunks/app/tools/invoice-generator/page-b736c5150cfe3711.js"
+    ],
+    "/tools/gst-number-checker/page": [
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
+      "static/chunks/main-app-cfc2142cc9d60200.js",
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/273-fbb1ec2ec2f28b80.js",
+      "static/chunks/app/tools/gst-number-checker/page-9c457f08ab6448fd.js"
     ],
     "/tools/gst-late-fee-calculator/page": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
-      "static/chunks/121-e1a49d2813bee60c.js",
-      "static/chunks/app/tools/gst-late-fee-calculator/page-444e27c9b47b2f2e.js"
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/273-fbb1ec2ec2f28b80.js",
+      "static/chunks/app/tools/gst-late-fee-calculator/page-b427d1187512cd04.js"
     ],
     "/(marketing)/page": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
-      "static/chunks/121-e1a49d2813bee60c.js",
-      "static/chunks/app/(marketing)/page-9608555720db0df7.js"
+      "static/chunks/696-c8fc5de261663057.js",
+      "static/chunks/273-fbb1ec2ec2f28b80.js",
+      "static/chunks/app/(marketing)/page-67e7e3af7a5ba053.js"
     ],
     "/(marketing)/layout": [
-      "static/chunks/webpack-b660a950544f8112.js",
-      "static/chunks/1dd3208c-0a72fdc3f7b5e300.js",
-      "static/chunks/286-65fe8fad2cc37e38.js",
+      "static/chunks/webpack-6580f8020eec7126.js",
+      "static/chunks/1dd3208c-c1364b6ec12af6ac.js",
+      "static/chunks/286-85285ff356e3f566.js",
       "static/chunks/main-app-cfc2142cc9d60200.js",
       "static/chunks/app/(marketing)/layout-0a261b4b116ff16a.js"
     ]

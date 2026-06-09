@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(curl -v --insecure -A 'Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' https://services.gst.gov.in/services/captcha?rnd=0.123)",
+      "Bash(curl -si --insecure -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://services.gst.gov.in/services/searchtp' -H 'captcha: test' https://services.gst.gov.in/services/api/search/taxpayerDetails?gstin=27AAACN1234R1ZT)",
+      "Bash(curl -v --insecure -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Referer: https://services.gst.gov.in/services/searchtp' -c /tmp/gstn_cookies.txt https://services.gst.gov.in/services/captcha?rnd=0.99)",
+      "Read(//tmp/**)",
+      "Bash(curl -v --insecure -b /tmp/gstn_cookies.txt -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://services.gst.gov.in/services/searchtp' -H 'captcha: abcdef' https://services.gst.gov.in/services/api/search/taxpayerDetails?gstin=27AAACN1234R1ZT)",
+      "Skill(run)",
+      "Skill(run:*)"
+    ]
+  }
+}

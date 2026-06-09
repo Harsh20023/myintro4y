@@ -1,30 +1,29 @@
 
-
 > @LedgerHQ/web@0.1.0 build
 > next build
 
-  [1m[38;2;173;127;168m▲ Next.js 14.2.0[39m[22m
+  ▲ Next.js 14.2.0
+  - Environments: .env.local
 
- [37m[1m [22m[39m Creating an optimized production build ...
- [32m[1m✓[22m[39m Compiled successfully
-[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G[?25h [37m[1m [22m[39m Linting and checking validity of types     [32m[1m✓[22m[39m Linting and checking validity of types 
-[?25l [37m[1m [22m[39m Collecting page data  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting page data  [36m..[39m[2K[1G[?25h [37m[1m [22m[39m Collecting page data     [32m[1m✓[22m[39m Collecting page data 
-[?25l [37m[1m [22m[39m Generating static pages (0/7)  [36m[    ][39m[2K[1G [37m[1m [22m[39m Generating static pages (5/7)  [36m[=   ][39m[2K[1G[?25h [32m[1m✓[22m[39m Generating static pages (7/7)
-[?25l [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[?25l [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G[?25h [37m[1m [22m[39m Collecting build traces     [32m[1m✓[22m[39m Collecting build traces 
-[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G[?25h [37m[1m [22m[39m Finalizing page optimization     [32m[1m✓[22m[39m Finalizing page optimization 
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
 
-[4mRoute (app)[24m                              [4mSize[24m     [4mFirst Load JS[24m
-┌ ○ /                                    933 B          [37m[1m95.7 kB[22m[39m
-├ ○ /_not-found                          873 B            [37m[1m88 kB[22m[39m
-├ ○ /tools/gst-calculator                3.17 kB        [37m[1m97.9 kB[22m[39m
-├ ○ /tools/gst-late-fee-calculator       5.76 kB         [37m[1m101 kB[22m[39m
-└ ○ /tools/invoice-generator             170 kB          [37m[1m265 kB[22m[39m
-+ First Load JS shared by all            [37m[1m87.1 kB[22m[39m
-  ├ chunks/1dd3208c-0a72fdc3f7b5e300.js  53.6 kB
-  ├ chunks/286-65fe8fad2cc37e38.js       31.4 kB
-  └ other shared chunks (total)          2.06 kB
+./src/lib/logic/pdf.ts:3:10
+Type error: Module '"./invoice"' has no exported member 'calcItem'.
 
-
-○  (Static)  prerendered as static content
-
-[?25h⠙[1G[0K
+[0m [90m 1 |[39m[0m
+[0m [90m 2 |[39m [36mimport[39m type { [33mInvoiceData[39m } [36mfrom[39m [32m'./invoice'[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { calcItem[33m,[39m calcTotals[33m,[39m amountInWords[33m,[39m validateInvoiceNumber[33m,[39m [33mINDIAN_STATES[39m[33m,[39m computeEffectiveRate } [36mfrom[39m [32m'./invoice'[39m[0m
+[0m [90m   |[39m          [31m[1m^[22m[39m[0m
+[0m [90m 4 |[39m [36mimport[39m [33mQRCode[39m [36mfrom[39m [32m'qrcode'[39m[0m
+[0m [90m 5 |[39m[0m
+[0m [90m 6 |[39m [36mexport[39m [36masync[39m [36mfunction[39m downloadInvoicePDF(data[33m:[39m [33mInvoiceData[39m)[33m:[39m [33mPromise[39m[33m<[39m[36mvoid[39m[33m>[39m {[0m
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path /Users/harsh/Desktop/LedgerHQ/myintro4y/apps/web
+npm error workspace @LedgerHQ/web@0.1.0
+npm error location /Users/harsh/Desktop/LedgerHQ/myintro4y/apps/web
+npm error command failed
+npm error command sh -c next build

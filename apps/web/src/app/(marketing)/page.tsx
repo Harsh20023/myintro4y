@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, Calculator, Clock, Search, ArrowRight, Zap, Shield, Download, Lock } from 'lucide-react'
+import { FileText, Calculator, Clock, Search, ArrowRight, Zap, Shield, Download, Lock, CreditCard } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { useAuth } from '@/lib/AuthContext'
@@ -39,9 +39,36 @@ const TOOLS = [
     title: 'GSTIN Checker',
     description: 'Verify any GST number live from the GSTN portal. See business name, status, and registration details.',
     href: '/tools/gst-number-checker',
-    badge: 'New',
+    badge: null,
     color: 'text-teal-600',
     bg: 'bg-teal-50',
+  },
+  {
+    icon: FileText,
+    title: 'GST Filing Checker',
+    description: 'Check GSTR-1 and GSTR-3B filing history for any GSTIN year-wise. View return filing frequency from the GSTN portal.',
+    href: '/tools/gst-filing-checker',
+    badge: 'New',
+    color: 'text-indigo-600',
+    bg: 'bg-indigo-50',
+  },
+  {
+    icon: CreditCard,
+    title: 'Search by PAN',
+    description: 'Find all GST registrations linked to a PAN number. View status and state for each GSTIN directly from the GSTN portal.',
+    href: '/tools/pan-checker',
+    badge: 'New',
+    color: 'text-rose-600',
+    bg: 'bg-rose-50',
+  },
+  {
+    icon: Download,
+    title: 'GST Return Downloader',
+    description: 'Download GSTR-1, GSTR-3B, GSTR-2A or GSTR-2B in Excel or PDF for any period — single month, full year, or bulk across years.',
+    href: '/tools/gst-return-downloader',
+    badge: 'New',
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
   },
 ]
 

@@ -47,6 +47,7 @@ module.exports = {
         'float-slow':   'float 9s ease-in-out infinite',
         'float-slower': 'float 12s ease-in-out infinite',
         'shimmer':      'shimmer 2.4s linear infinite',
+        'sweep':        'sweep 1.8s ease-in-out infinite',
         'spin-slow':    'spin 22s linear infinite',
         'pulse-glow':   'pulseGlow 3s ease-in-out infinite',
         'slide-up':     'slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards',
@@ -84,6 +85,11 @@ module.exports = {
         scaleIn: {
           '0%':   { opacity: '0', transform: 'scale(0.9)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        sweep: {
+          '0%':   { transform: 'translateX(-100%)' },
+          '60%':  { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(100%)' },
         },
       },
     },

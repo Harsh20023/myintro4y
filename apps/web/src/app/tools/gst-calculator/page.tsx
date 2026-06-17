@@ -13,7 +13,7 @@ export default function GSTCalculatorPage() {
   return (
     <ToolLayout
       title="GST Calculator"
-      description="Calculate GST instantly. Supports all slabs — 5%, 12%, 18%, 28%. CGST+SGST or IGST."
+      description="Calculate GST instantly — supports 0%, 1%, 5%, 6%, 12%, 18%, 28%, 40%. CGST+SGST or IGST."
       breadcrumb="GST Calculator"
       badge="Free"
       // relatedTools={[{ label: 'Invoice Generator', href: '/tools/invoice-generator' }]}

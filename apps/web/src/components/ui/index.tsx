@@ -6,7 +6,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   prefix?: string
-  suffix?: string
+  suffix?: React.ReactNode
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {suffix && (
-            <span className="absolute right-3.5 text-ink-400 text-sm select-none pointer-events-none">
+            <span className="absolute right-3.5 text-ink-400 text-sm flex items-center">
               {suffix}
             </span>
           )}

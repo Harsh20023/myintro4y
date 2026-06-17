@@ -8,7 +8,15 @@
       "Read(//tmp/**)",
       "Bash(curl -v --insecure -b /tmp/gstn_cookies.txt -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://services.gst.gov.in/services/searchtp' -H 'captcha: abcdef' https://services.gst.gov.in/services/api/search/taxpayerDetails?gstin=27AAACN1234R1ZT)",
       "Skill(run)",
-      "Skill(run:*)"
+      "Skill(run:*)",
+      "Bash(# Get the terminal for the API process and check its recent output *)",
+      "Read(//proc/51077/**)",
+      "Bash(grep -v \"^$\")",
+      "Bash(awk '{print $9}')",
+      "Bash(awk '{print $2, $11, $12}')",
+      "Bash(kill -9 12086 12085)",
+      "Bash(npx turbo *)",
+      "Bash(echo \"PID: $!\")"
     ]
   }
 }

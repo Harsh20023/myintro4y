@@ -8,6 +8,7 @@ import authRoutes from './routes/auth'
 import googleRoutes from './routes/google'
 import configRoutes from './routes/config'
 import gstRoutes from './routes/gst'
+import gstReturnsRoutes from './routes/gst-returns'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
@@ -23,7 +24,8 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 app.use('/auth',   authRoutes)
 app.use('/auth',   googleRoutes)
 app.use('/config', configRoutes)
-app.use('/gst',    gstRoutes)
+app.use('/gst',         gstRoutes)
+app.use('/gst/returns', gstReturnsRoutes)
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`))

@@ -405,6 +405,10 @@
 
 
 
+'use client'
+
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
 // import { useState, useCallback, useEffect } from 'react'
 // import { Plus, Trash2, RefreshCw, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, FileDown } from 'lucide-react'
 // import { Input, Select, Textarea } from '@/components/ui'
@@ -431,6 +435,13 @@ export default function RetailGSTPreview({ data }: { data: InvoiceData }) {
   const hasCess = data.items.some(i => i.cessRate > 0)
   const formattedPOS  = INDIAN_STATES.find(s => s.value === data.placeOfSupply)?.label || data.placeOfSupply
   const isInvNumValid = validateInvoiceNumber(data.invoiceNumber)
+
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!data.upiId) { setQrDataUrl(null); return }
+    const upiString = `upi://pay?pa=${encodeURIComponent(data.upiId)}&pn=${encodeURIComponent(data.sellerName || '')}&am=${totals.grandTotal.toFixed(2)}&cu=INR&tn=${encodeURIComponent(data.invoiceNumber || 'Invoice')}`
+    QRCode.toDataURL(upiString, { width: 96, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(null))
+  }, [data.upiId, data.sellerName, data.invoiceNumber, totals.grandTotal])
 
   return (
     <div id="invoice-preview" className="bg-white text-slate-800 border-2 border-slate-900 overflow-hidden font-sans text-xs shadow-sm max-w-[210mm] mx-auto">
@@ -613,6 +624,12 @@ export default function RetailGSTPreview({ data }: { data: InvoiceData }) {
           {data.bankAccountNumber && <p className="text-slate-600 font-mono">A/C: {data.bankAccountNumber}</p>}
           {data.bankIfsc          && <p className="text-slate-600 font-mono">IFSC: {data.bankIfsc}</p>}
           {data.bankBranch        && <p className="text-slate-600 text-[10px]">Branch: {data.bankBranch}</p>}
+          {data.upiId             && <p className="text-slate-600 font-mono text-[10px]">UPI: {data.upiId}</p>}
+          {qrDataUrl && (
+            <div className="pt-1">
+              <img src={qrDataUrl} alt="UPI QR" className="w-20 h-20 border border-slate-200 rounded" />
+            </div>
+          )}
         </div>
         <div className="p-3 flex flex-col justify-between min-h-[72px]">
           <div>

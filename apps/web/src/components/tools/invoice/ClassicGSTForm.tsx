@@ -552,17 +552,25 @@ export default function ClassicGSTForm({ data, set, updateItem, addItem, removeI
             onChange={e => set('bankName', e.target.value)}
             placeholder="e.g. IDFC FIRST" />
           <Input label="Account Number" value={data.bankAccountNumber ?? ''}
-            onChange={e => set('bankAccountNumber', e.target.value)}
-            placeholder="e.g. 10215939113" />
+            onChange={e => set('bankAccountNumber', e.target.value.replace(/\D/g, ''))}
+            placeholder="e.g. 10215939113"
+            maxLength={18}
+            inputMode="numeric"
+            error={data.bankAccountNumber && !/^\d{9,18}$/.test(data.bankAccountNumber) ? 'Account number must be 9–18 digits' : undefined} />
           <Input label="IFSC Code" value={data.bankIfsc ?? ''}
-            onChange={e => set('bankIfsc', e.target.value)}
-            placeholder="e.g. IDFB0020129" />
+            onChange={e => set('bankIfsc', e.target.value.toUpperCase())}
+            placeholder="e.g. IDFB0020129"
+            maxLength={11}
+            error={data.bankIfsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(data.bankIfsc) ? 'Invalid IFSC — must be 11 chars: 4 letters + 0 + 6 alphanumeric' : undefined} />
           <Input label="Branch" value={data.bankBranch ?? ''}
-            onChange={e => set('bankBranch', e.target.value)}
-            placeholder="e.g. Gurgaon Sohna Road Branch" />
+            onChange={e => { if (e.target.value.length <= 100) set('bankBranch', e.target.value) }}
+            placeholder="e.g. Gurgaon Sohna Road Branch"
+            maxLength={100}
+            error={data.bankBranch && data.bankBranch.length > 100 ? 'Branch name must be under 100 characters' : undefined} />
           <Input label="UPI ID" value={data.upiId ?? ''}
-            onChange={e => set('upiId', e.target.value)}
+            onChange={e => { if (e.target.value.length <= 33) set('upiId', e.target.value) }}
             placeholder="e.g. business@upi"
+            maxLength={33}
             className="col-span-2" />
         </div>
       </Section>

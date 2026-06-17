@@ -183,211 +183,156 @@
 //   d.setDate(20)
 //   return d.toISOString().split('T')[0]
 // }
-// Pure GST late fee & interest logic — updated per CBIC rules
-// Tiered system: up to 90 days vs beyond 90 days
+// Pure GST late fee & interest logic — per CBIC rules
+// Flat per-day rate; statutory caps are turnover-based (CBIC 19/2021, 20/2021, 07/2023)
+// Interest formula per Section 50 CGST Act: (tax − ITC − cash balance) × rate × days / 365
 
-export type ReturnType = 'GSTR3B' | 'GSTR1' | 'GSTR1Q' | 'GSTR9' | 'GSTR9A' | 'GSTR10'
-export type TaxpayerType = 'regular' | 'composition' | 'sme'
+export type ReturnType = 'GSTR3B' | 'GSTR1' | 'GSTR1Q' | 'GSTR4' | 'GSTR7' | 'GSTR9' | 'GSTR9A' | 'GSTR10'
+export type InterestType = 'late_payment' | 'excess_itc'
 
 export interface LateFeeInput {
-  returnType:   ReturnType
-  dueDate:      string   // YYYY-MM-DD
-  filingDate:   string   // YYYY-MM-DD
-  isNil:        boolean
-  taxpayerType: TaxpayerType
-  taxLiability: number
-  itcAvailable: number
-  turnover:     number
+  returnType:      ReturnType
+  dueDate:         string        // YYYY-MM-DD
+  filingDate:      string        // YYYY-MM-DD
+  isNil:           boolean
+  taxLiability:    number
+  itcAvailable:    number
+  minCashBalance:  number        // existing cash ledger balance (reduces interest base)
+  turnover:        number        // annual aggregate turnover for cap calculation
+  interestType:    InterestType  // 18% (late payment) or 24% (excess ITC / reduced output)
 }
 
 export interface LateFeeResult {
-  daysLate:          number
-  // Tier breakdown
-  daysInTier1:       number   // days 1–90
-  daysInTier2:       number   // days 91+
-  // Late fee
-  cgstFee:           number
-  sgstFee:           number
-  totalFee:          number
-  rawFeeBeforeCap:   number
-  isCapped:          boolean
-  maxFeeApplied:     number
-  // Additional penalty (>90 days + unpaid tax)
-  additionalPenalty: number
-  // Interest
-  interest:          number
-  interestRate:      number
-  netCashLiability:  number
-  // Total
-  grandTotal:        number
-  hasInterest:       boolean
-  interestNote:      string
+  daysLate:        number
+  cgstFee:         number
+  sgstFee:         number
+  totalFee:        number
+  rawFeeBeforeCap: number
+  isCapped:        boolean
+  maxFeeApplied:   number        // 0 when no statutory cap
+  capReason:       string
+  interest:        number
+  interestRate:    number
+  netTaxBase:      number        // base amount used for interest (after ITC & cash balance)
+  grandTotal:      number
+  hasInterest:     boolean
+  interestNote:    string
+  cgstPerDay:      number        // actual per-day rate used for CGST
+  sgstPerDay:      number        // actual per-day rate used for SGST
 }
 
-interface TierRate {
-  cgstPerDay: number
-  sgstPerDay: number
-  maxCap:     number   // total (cgst+sgst) — Infinity = no cap
+const CR = 10_000_000  // 1 crore
+
+// GSTR-9/9A per CBIC notification 07/2023 — AATO-slab based rates & 0.04% cap
+function gstr9Rates(turnover: number) {
+  if (turnover > 0 && turnover <= 5 * CR)  return { cgstPerDay: 25,  sgstPerDay: 25,  cap: turnover * 0.0004, capLabel: '0.04% of turnover' }
+  if (turnover > 5 * CR && turnover <= 20 * CR) return { cgstPerDay: 50,  sgstPerDay: 50,  cap: turnover * 0.0004, capLabel: '0.04% of turnover' }
+  if (turnover > 20 * CR) return { cgstPerDay: 100, sgstPerDay: 100, cap: turnover * 0.005, capLabel: '0.50% of turnover' }
+  // turnover not entered → use statutory default, no cap
+  return { cgstPerDay: 100, sgstPerDay: 100, cap: Infinity, capLabel: 'Enter turnover for cap' }
 }
 
-interface ReturnRule {
-  label:         string
-  tier1:         TierRate   // 0–90 days
-  tier2:         TierRate   // 91+ days
-  nilRate:       TierRate   // NIL returns (same tier1/tier2 structure but lower)
-  nilTier2:      TierRate
-  turnoverCap:   number | null  // for annual returns: % per component
-  interestRate:  number
-  hasInterest:   boolean
-  hasAdditionalPenalty: boolean // additional penalty for >90 days unpaid
+// GSTR-1/3B/4 turnover-slab caps per CBIC notifications 19-21/2021
+function standardCap(turnover: number, isNil: boolean): { cap: number; reason: string } {
+  if (isNil) return { cap: 500,   reason: 'NIL return — max ₹500 (₹250 CGST + ₹250 SGST)' }
+  if (turnover <= 0)        return { cap: 10000, reason: 'No turnover entered — default cap ₹10,000' }
+  if (turnover <= 1.5 * CR) return { cap: 2000,  reason: 'Turnover ≤ ₹1.5 cr — max ₹2,000' }
+  if (turnover <= 5 * CR)   return { cap: 5000,  reason: 'Turnover ₹1.5–5 cr — max ₹5,000' }
+  return { cap: 10000, reason: 'Turnover > ₹5 cr — max ₹10,000' }
 }
-
-const RULES: Record<ReturnType, ReturnRule> = {
-  GSTR3B: {
-    label: 'GSTR-3B',
-    tier1:    { cgstPerDay: 25, sgstPerDay: 25, maxCap: 5000  },
-    tier2:    { cgstPerDay: 50, sgstPerDay: 50, maxCap: 10000 },
-    nilRate:  { cgstPerDay: 10, sgstPerDay: 10, maxCap: 5000  },
-    nilTier2: { cgstPerDay: 10, sgstPerDay: 10, maxCap: 10000 },
-    turnoverCap: null,
-    interestRate: 18,
-    hasInterest: true,
-    hasAdditionalPenalty: true,
-  },
-  GSTR1: {
-    label: 'GSTR-1 (Monthly)',
-    tier1:    { cgstPerDay: 25, sgstPerDay: 25, maxCap: 5000  },
-    tier2:    { cgstPerDay: 50, sgstPerDay: 50, maxCap: 10000 },
-    nilRate:  { cgstPerDay: 10, sgstPerDay: 10, maxCap: 5000  },
-    nilTier2: { cgstPerDay: 10, sgstPerDay: 10, maxCap: 10000 },
-    turnoverCap: null,
-    interestRate: 0,
-    hasInterest: false,
-    hasAdditionalPenalty: false,
-  },
-  GSTR1Q: {
-    label: 'GSTR-1 (Quarterly)',
-    tier1:    { cgstPerDay: 25, sgstPerDay: 25, maxCap: 5000  },
-    tier2:    { cgstPerDay: 50, sgstPerDay: 50, maxCap: 10000 },
-    nilRate:  { cgstPerDay: 10, sgstPerDay: 10, maxCap: 5000  },
-    nilTier2: { cgstPerDay: 10, sgstPerDay: 10, maxCap: 10000 },
-    turnoverCap: null,
-    interestRate: 0,
-    hasInterest: false,
-    hasAdditionalPenalty: false,
-  },
-  GSTR9: {
-    label: 'GSTR-9 (Annual)',
-    tier1:    { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    tier2:    { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    nilRate:  { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    nilTier2: { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    turnoverCap: 0.0025, // 0.25% of turnover per component
-    interestRate: 18,
-    hasInterest: true,
-    hasAdditionalPenalty: false,
-  },
-  GSTR9A: {
-    label: 'GSTR-9A (Composition Annual)',
-    tier1:    { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    tier2:    { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    nilRate:  { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    nilTier2: { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    turnoverCap: 0.0025,
-    interestRate: 18,
-    hasInterest: true,
-    hasAdditionalPenalty: false,
-  },
-  GSTR10: {
-    label: 'GSTR-10 (Final)',
-    tier1:    { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    tier2:    { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    nilRate:  { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    nilTier2: { cgstPerDay: 100, sgstPerDay: 100, maxCap: Infinity },
-    turnoverCap: null,
-    interestRate: 0,
-    hasInterest: false,
-    hasAdditionalPenalty: false,
-  },
-}
-
-// SME/MSME reduced cap
-const SME_CAP = { tier1: 2500, tier2: 5000, nilTier1: 2500, nilTier2: 5000 }
 
 export function calcLateFee(input: LateFeeInput): LateFeeResult {
-  const due    = new Date(input.dueDate)
-  const filed  = new Date(input.filingDate)
-  const daysLate = Math.max(0, Math.floor((filed.getTime() - due.getTime()) / 86400000))
+  const daysLate = Math.max(
+    0,
+    Math.floor((new Date(input.filingDate).getTime() - new Date(input.dueDate).getTime()) / 86400000),
+  )
 
-  const rules = RULES[input.returnType]
-  const netCashLiability = Math.max(0, input.taxLiability - input.itcAvailable)
+  // Net base for interest: outstanding tax minus ITC and any existing cash balance
+  const netTaxBase = Math.max(0, input.taxLiability - input.itcAvailable - input.minCashBalance)
 
-  // Split days into two tiers
-  const TIER_THRESHOLD = 90
-  const daysInTier1 = Math.min(daysLate, TIER_THRESHOLD)
-  const daysInTier2 = Math.max(0, daysLate - TIER_THRESHOLD)
+  let cgstPerDay: number
+  let sgstPerDay: number
+  let effectiveCap: number
+  let capReason: string
+  let hasInterest: boolean
 
-  // Pick rate based on nil / regular
-  const t1Rate = input.isNil ? rules.nilRate  : rules.tier1
-  const t2Rate = input.isNil ? rules.nilTier2 : rules.tier2
+  const rt = input.returnType
 
-  // Raw fees per tier
-  const rawCGST = (t1Rate.cgstPerDay * daysInTier1) + (t2Rate.cgstPerDay * daysInTier2)
-  const rawSGST = (t1Rate.sgstPerDay * daysInTier1) + (t2Rate.sgstPerDay * daysInTier2)
+  if (rt === 'GSTR9' || rt === 'GSTR9A') {
+    const r = gstr9Rates(input.turnover)
+    cgstPerDay  = r.cgstPerDay
+    sgstPerDay  = r.sgstPerDay
+    effectiveCap = r.cap
+    capReason   = r.capLabel + ' (CBIC 07/2023)'
+    hasInterest = true
+  } else if (rt === 'GSTR10') {
+    cgstPerDay  = 100
+    sgstPerDay  = 100
+    effectiveCap = Infinity
+    capReason   = 'No statutory cap'
+    hasInterest = false
+  } else if (rt === 'GSTR7') {
+    // ₹50/day per act per return, max ₹2,000 — CBIC 22/2021
+    cgstPerDay  = 25
+    sgstPerDay  = 25
+    effectiveCap = 2000
+    capReason   = 'Max ₹2,000 (CBIC 22/2021)'
+    hasInterest = false
+  } else if (rt === 'GSTR4') {
+    cgstPerDay  = input.isNil ? 10 : 25
+    sgstPerDay  = input.isNil ? 10 : 25
+    effectiveCap = input.isNil ? 500 : 2000
+    capReason   = input.isNil ? 'NIL cap ₹500' : 'Max ₹2,000'
+    hasInterest = false
+  } else {
+    // GSTR-1 (monthly/quarterly) and GSTR-3B
+    const std   = standardCap(input.turnover, input.isNil)
+    cgstPerDay  = input.isNil ? 10 : 25
+    sgstPerDay  = input.isNil ? 10 : 25
+    effectiveCap = std.cap
+    capReason   = std.reason + ' (CBIC 19-21/2021)'
+    hasInterest = rt === 'GSTR3B'
+  }
+
+  const rawCGST = cgstPerDay * daysLate
+  const rawSGST = sgstPerDay * daysLate
   const rawTotal = rawCGST + rawSGST
 
-  // Determine effective cap
-  let effectiveCap: number
+  const cappedTotal = effectiveCap === Infinity ? rawTotal : Math.min(rawTotal, effectiveCap)
+  const isCapped    = rawTotal > effectiveCap && effectiveCap !== Infinity
 
-  if (rules.turnoverCap !== null && input.turnover > 0) {
-    // Annual returns: 0.25% of turnover per component × 2
-    effectiveCap = rules.turnoverCap * input.turnover * 2
-  } else if (input.taxpayerType === 'sme') {
-    effectiveCap = daysLate <= TIER_THRESHOLD
-      ? (input.isNil ? SME_CAP.nilTier1 : SME_CAP.tier1)
-      : (input.isNil ? SME_CAP.nilTier2 : SME_CAP.tier2)
-  } else {
-    // Use the higher cap (tier2) if any days crossed 90
-    effectiveCap = daysInTier2 > 0 ? t2Rate.maxCap : t1Rate.maxCap
-  }
-
-  const cappedTotal = Math.min(rawTotal, effectiveCap)
-  const cgstFee = cappedTotal / 2
-  const sgstFee = cappedTotal / 2
-  const isCapped = rawTotal > effectiveCap
-
-  // Additional penalty: only for >90 days AND tax is unpaid (GSTR-3B)
-  // ₹10,000 or 10% of tax due — whichever is higher
-  let additionalPenalty = 0
-  if (rules.hasAdditionalPenalty && daysInTier2 > 0 && input.taxLiability > 0) {
-    additionalPenalty = Math.max(10000, input.taxLiability * 0.10)
-  }
-
-  // Interest: 18% p.a. on net cash liability
-  let interest = 0
+  const interestRate = input.interestType === 'excess_itc' ? 24 : 18
+  let interest    = 0
   let interestNote = ''
-  if (rules.hasInterest && rules.interestRate > 0) {
-    if (netCashLiability > 0) {
-      interest = (netCashLiability * rules.interestRate * daysLate) / (100 * 365)
-      interestNote = `${rules.interestRate}% p.a. on ₹${netCashLiability.toLocaleString('en-IN')} × ${daysLate} days ÷ 365`
+
+  if (hasInterest) {
+    if (netTaxBase > 0) {
+      interest = (netTaxBase * interestRate * daysLate) / (100 * 365)
+      interestNote = `${interestRate}% p.a. on ₹${netTaxBase.toLocaleString('en-IN')} × ${daysLate} days ÷ 365`
     } else {
-      interestNote = 'No net cash liability after ITC'
+      interestNote = 'No net cash liability after ITC & cash ledger balance'
     }
   } else {
-    interestNote = `Not applicable for ${rules.label}`
+    interestNote = 'Interest not applicable for this return type'
   }
 
   return {
-    daysLate, daysInTier1, daysInTier2,
-    cgstFee, sgstFee, totalFee: cappedTotal,
+    daysLate,
+    cgstFee: cappedTotal / 2,
+    sgstFee: cappedTotal / 2,
+    totalFee: cappedTotal,
     rawFeeBeforeCap: rawTotal,
-    isCapped, maxFeeApplied: effectiveCap,
-    additionalPenalty,
-    interest, interestRate: rules.interestRate,
-    netCashLiability,
-    grandTotal: cappedTotal + additionalPenalty + interest,
-    hasInterest: rules.hasInterest,
+    isCapped,
+    maxFeeApplied: effectiveCap === Infinity ? 0 : effectiveCap,
+    capReason,
+    interest,
+    interestRate,
+    netTaxBase,
+    grandTotal: cappedTotal + interest,
+    hasInterest,
     interestNote,
+    cgstPerDay,
+    sgstPerDay,
   }
 }
 
@@ -395,12 +340,13 @@ export const RETURN_OPTIONS = [
   { value: 'GSTR3B',  label: 'GSTR-3B (Monthly) — Due 20th' },
   { value: 'GSTR1',   label: 'GSTR-1 (Monthly) — Due 11th' },
   { value: 'GSTR1Q',  label: 'GSTR-1 (Quarterly)' },
+  { value: 'GSTR4',   label: 'GSTR-4 (Composition Annual)' },
+  { value: 'GSTR7',   label: 'GSTR-7 (TDS Return)' },
   { value: 'GSTR9',   label: 'GSTR-9 (Annual)' },
   { value: 'GSTR9A',  label: 'GSTR-9A (Composition Annual)' },
-  { value: 'GSTR10',  label: 'GSTR-10 (Final)' },
+  { value: 'GSTR10',  label: 'GSTR-10 (Final Return)' },
 ] as const
 
-// Smart default due dates based on return type
 export function getDefaultDueDate(returnType: ReturnType = 'GSTR3B'): string {
   const d = new Date()
   d.setMonth(d.getMonth() - 1)

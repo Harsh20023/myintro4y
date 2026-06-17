@@ -1,12 +1,3 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/signup/page": "app/signup/page.js",
-  "/auth/callback/page": "app/auth/callback/page.js",
-  "/login/page": "app/login/page.js",
-  "/verify-otp/page": "app/verify-otp/page.js",
-  "/tools/gst-calculator/page": "app/tools/gst-calculator/page.js",
-  "/tools/invoice-generator/page": "app/tools/invoice-generator/page.js",
-  "/tools/gst-number-checker/page": "app/tools/gst-number-checker/page.js",
-  "/tools/gst-late-fee-calculator/page": "app/tools/gst-late-fee-calculator/page.js",
-  "/(marketing)/page": "app/(marketing)/page.js"
+  "/tools/gst-return-downloader/page": "app/tools/gst-return-downloader/page.js"
 }

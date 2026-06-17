@@ -9,6 +9,18 @@ router.get('/devices', requireAuth, async (_req, res) => {
   res.json(devices)
 })
 
+router.post('/devices/:id/kick', requireAuth, async (req, res) => {
+  const device = await Device.findByIdAndUpdate(req.params.id, { blocked: true }, { new: true })
+  if (!device) return res.status(404).json({ error: 'Device not found' })
+  res.json({ success: true })
+})
+
+router.post('/devices/:id/restore', requireAuth, async (req, res) => {
+  const device = await Device.findByIdAndUpdate(req.params.id, { blocked: false }, { new: true })
+  if (!device) return res.status(404).json({ error: 'Device not found' })
+  res.json({ success: true })
+})
+
 router.get('/credentials', requireAuth, async (_req, res) => {
   const creds = await Credential.find().sort({ clientName: 1 })
   res.json(

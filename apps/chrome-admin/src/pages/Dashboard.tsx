@@ -94,7 +94,13 @@ export default function Dashboard() {
           onSuccess={msg => pushToast(msg, 'success')}
           onError={msg => pushToast(msg, 'error')}
         />
-        <DevicesPanel devices={devices} loading={loadingDevices} />
+        <DevicesPanel
+          devices={devices}
+          loading={loadingDevices}
+          onRefresh={loadDevices}
+          onSuccess={msg => pushToast(msg, 'success')}
+          onError={msg => pushToast(msg, 'error')}
+        />
       </main>
 
       {/* Toasts */}

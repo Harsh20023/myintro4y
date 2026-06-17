@@ -5,6 +5,7 @@ const deviceSchema = new mongoose.Schema({
   chromeProfileName: { type: String, default: 'Unknown' },
   browserInfo: { type: String, default: '' },
   ipAddress: { type: String, default: '' },
+  blocked: { type: Boolean, default: false },
   firstSeen: { type: Date, default: Date.now },
   lastSeen: { type: Date, default: Date.now },
 })

@@ -35,23 +35,17 @@ export interface Device {
   chromeProfileName: string
   browserInfo: string
   ipAddress: string
+  blocked: boolean
   firstSeen: string
   lastSeen: string
 }
 
 export const authApi = {
-  requestOtp: (phone: string) =>
-    fetch(`${API_BASE}/api/auth/request-otp`, {
+  login: (username: string, password: string, totpCode: string) =>
+    fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone }),
-    }).then(r => handle<{ success: boolean }>(r)),
-
-  verifyOtp: (phone: string, otp: string) =>
-    fetch(`${API_BASE}/api/auth/verify-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, otp }),
+      body: JSON.stringify({ username, password, totpCode }),
     }).then(r => handle<{ token: string }>(r)),
 }
 
@@ -88,4 +82,16 @@ export const devicesApi = {
   list: () =>
     fetch(`${API_BASE}/api/admin/devices`, { headers: authHeaders() })
       .then(r => handle<Device[]>(r)),
+
+  kick: (id: string) =>
+    fetch(`${API_BASE}/api/admin/devices/${id}/kick`, {
+      method: 'POST',
+      headers: authHeaders(),
+    }).then(r => handle<{ success: boolean }>(r)),
+
+  restore: (id: string) =>
+    fetch(`${API_BASE}/api/admin/devices/${id}/restore`, {
+      method: 'POST',
+      headers: authHeaders(),
+    }).then(r => handle<{ success: boolean }>(r)),
 }

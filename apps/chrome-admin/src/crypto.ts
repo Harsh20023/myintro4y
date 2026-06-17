@@ -1,6 +1,6 @@
 const KEY_HEX = (import.meta.env.VITE_ENCRYPTION_KEY as string) ?? ''
 
-function hexToBytes(hex: string): Uint8Array {
+function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
   const arr = new Uint8Array(hex.length / 2)
   for (let i = 0; i < hex.length; i += 2)
     arr[i / 2] = parseInt(hex.slice(i, i + 2), 16)

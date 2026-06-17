@@ -15,7 +15,7 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
   const [editing, setEditing] = useState<Credential | null>(null)
   const [showBulk, setShowBulk] = useState(false)
   const [adding, setAdding] = useState(false)
-  const [form, setForm] = useState({ clientName: '', gstin: '', username: '', password: '' })
+  const [form, setForm] = useState({ clientName: '', gstin: '', siteUrl: '', username: '', password: '' })
   const [showPassMap, setShowPassMap] = useState<Record<string, boolean>>({})
 
   function togglePass(id: string) {
@@ -31,7 +31,7 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
     setAdding(true)
     try {
       await credentialsApi.add(form)
-      setForm({ clientName: '', gstin: '', username: '', password: '' })
+      setForm({ clientName: '', gstin: '', siteUrl: '', username: '', password: '' })
       onSuccess('Credential added')
       onRefresh()
     } catch (err) {
@@ -90,6 +90,13 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
               className={inputCls}
             />
             <input
+              type="url"
+              placeholder="Portal URL (e.g. https://services.gst.gov.in/...)"
+              value={form.siteUrl}
+              onChange={e => setForm(f => ({ ...f, siteUrl: e.target.value }))}
+              className={`${inputCls} col-span-2`}
+            />
+            <input
               type="text"
               placeholder="Username *"
               value={form.username}
@@ -125,7 +132,7 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-700">
-                  {['Client', 'GSTIN', 'Username', 'Password', 'Updated', ''].map(h => (
+                  {['Client', 'GSTIN', 'Portal URL', 'Username', 'Password', 'Updated', ''].map(h => (
                     <th key={h} className="text-left text-slate-500 text-xs font-semibold uppercase tracking-wide px-6 py-3">
                       {h}
                     </th>
@@ -137,6 +144,14 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
                   <tr key={c.id} className="border-b border-slate-700/50 hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-3.5 text-white font-medium whitespace-nowrap">{c.clientName}</td>
                     <td className="px-6 py-3.5 text-slate-400 font-mono text-xs">{c.gstin || '—'}</td>
+                    <td className="px-6 py-3.5 text-xs max-w-[200px]">
+                      {c.siteUrl
+                        ? <a href={c.siteUrl} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 truncate block transition-colors" title={c.siteUrl}>
+                            {new URL(c.siteUrl).hostname}
+                          </a>
+                        : <span className="text-slate-600">—</span>
+                      }
+                    </td>
                     <td className="px-6 py-3.5 text-slate-300 font-mono text-xs">{c.username}</td>
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-2">

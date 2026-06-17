@@ -5,6 +5,7 @@ import { credentialsApi } from '../api'
 interface ParsedRow {
   clientName: string
   gstin: string
+  siteUrl: string
   username: string
   password: string
 }
@@ -48,10 +49,11 @@ export default function BulkUploadModal({ onClose, onDone, onError }: Props) {
           if (normalized.some(h => h === 'party name' || h === 'user id')) {
             headerIdx = i
             normalized.forEach((h, j) => {
-              if (h === 'party name') colMap.clientName = j
-              if (h === 'gstn')       colMap.gstin = j
-              if (h === 'user id')    colMap.username = j
-              if (h === 'password')   colMap.password = j
+              if (h === 'party name')              colMap.clientName = j
+              if (h === 'gstn')                  colMap.gstin = j
+              if (['link', 'url', 'site url', 'portal', 'portal url', 'website'].includes(h)) colMap.siteUrl = j
+              if (h === 'user id')               colMap.username = j
+              if (h === 'password')              colMap.password = j
             })
             break
           }
@@ -73,10 +75,11 @@ export default function BulkUploadModal({ onClose, onDone, onError }: Props) {
           if (!Array.isArray(row)) continue
           const clientName = String(row[colMap.clientName] ?? '').trim()
           const gstin      = String(row[colMap.gstin]      ?? '').trim()
+          const siteUrl    = colMap.siteUrl !== undefined ? String(row[colMap.siteUrl] ?? '').trim() : ''
           const username   = String(row[colMap.username]   ?? '').trim()
           const password   = String(row[colMap.password]   ?? '').trim()
           if (!clientName && !username) continue // skip blank rows
-          parsed.push({ clientName, gstin, username, password })
+          parsed.push({ clientName, gstin, siteUrl, username, password })
         }
 
         if (parsed.length === 0) {

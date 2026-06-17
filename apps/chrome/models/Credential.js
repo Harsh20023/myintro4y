@@ -4,6 +4,7 @@ const credentialSchema = new mongoose.Schema(
   {
     clientName: { type: String, required: true },
     gstin: { type: String, default: '' },
+    siteUrl: { type: String, default: '' },
     encryptedUsername: { type: String, required: true },
     usernameIv: { type: String, required: true },
     usernameAuthTag: { type: String, required: true },

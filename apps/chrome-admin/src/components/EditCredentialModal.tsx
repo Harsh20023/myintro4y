@@ -11,6 +11,7 @@ interface Props {
 export default function EditCredentialModal({ credential, onClose, onSaved, onError }: Props) {
   const [clientName, setClientName] = useState(credential.clientName)
   const [gstin, setGstin] = useState(credential.gstin)
+  const [siteUrl, setSiteUrl] = useState(credential.siteUrl)
   const [username, setUsername] = useState(credential.username)
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -24,7 +25,7 @@ export default function EditCredentialModal({ credential, onClose, onSaved, onEr
     }
     setSaving(true)
     try {
-      const body: Parameters<typeof credentialsApi.update>[1] = { clientName, gstin, username }
+      const body: Parameters<typeof credentialsApi.update>[1] = { clientName, gstin, siteUrl, username }
       if (password) body.password = password
       await credentialsApi.update(credential.id, body)
       onSaved()
@@ -66,6 +67,16 @@ export default function EditCredentialModal({ credential, onClose, onSaved, onEr
               onChange={e => setGstin(e.target.value)}
               className={inputCls}
               placeholder="22AAAAA0000A1Z5"
+            />
+          </Field>
+
+          <Field label="Portal URL">
+            <input
+              type="url"
+              value={siteUrl}
+              onChange={e => setSiteUrl(e.target.value)}
+              className={inputCls}
+              placeholder="https://services.gst.gov.in/services/login"
             />
           </Field>
 

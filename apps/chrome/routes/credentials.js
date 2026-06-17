@@ -29,6 +29,7 @@ router.get('/', requireAuth, async (req, res) => {
       id: c._id,
       clientName: c.clientName,
       gstin: c.gstin,
+      siteUrl: c.siteUrl,
       encryptedUsername: c.encryptedUsername,
       usernameIv: c.usernameIv,
       usernameAuthTag: c.usernameAuthTag,

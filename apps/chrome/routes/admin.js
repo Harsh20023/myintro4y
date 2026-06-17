@@ -2,7 +2,7 @@ const router = require('express').Router()
 const requireAuth = require('../middleware/auth')
 const Credential = require('../models/Credential')
 const Device = require('../models/Device')
-const { encrypt, decrypt } = require('../utils/crypto')
+const { encrypt } = require('../utils/crypto')
 
 router.get('/devices', requireAuth, async (_req, res) => {
   const devices = await Device.find().sort({ lastSeen: -1 })
@@ -28,6 +28,7 @@ router.get('/credentials', requireAuth, async (_req, res) => {
       id: c._id,
       clientName: c.clientName,
       gstin: c.gstin,
+      siteUrl: c.siteUrl,
       encryptedUsername: c.encryptedUsername,
       usernameIv: c.usernameIv,
       usernameAuthTag: c.usernameAuthTag,
@@ -41,10 +42,9 @@ router.get('/credentials', requireAuth, async (_req, res) => {
 })
 
 router.post('/credentials', requireAuth, async (req, res) => {
-  const { clientName, gstin, username, password } = req.body
-  if (!clientName || !username || !password) {
+  const { clientName, gstin, siteUrl, username, password } = req.body
+  if (!clientName || !username || !password)
     return res.status(400).json({ error: 'clientName, username, and password are required' })
-  }
 
   const u = encrypt(username)
   const p = encrypt(password)
@@ -52,6 +52,7 @@ router.post('/credentials', requireAuth, async (req, res) => {
   const cred = await Credential.create({
     clientName,
     gstin: gstin || '',
+    siteUrl: siteUrl || '',
     encryptedUsername: u.encrypted,
     usernameIv: u.iv,
     usernameAuthTag: u.authTag,
@@ -72,7 +73,7 @@ router.post('/credentials/bulk', requireAuth, async (req, res) => {
   const errors = []
 
   for (const cred of credentials) {
-    const { clientName, gstin, username, password } = cred
+    const { clientName, gstin, siteUrl, username, password } = cred
     if (!clientName || !username || !password) {
       errors.push({ clientName: clientName || '?', reason: 'Missing name, username, or password' })
       continue
@@ -83,6 +84,7 @@ router.post('/credentials/bulk', requireAuth, async (req, res) => {
       await Credential.create({
         clientName,
         gstin: gstin || '',
+        siteUrl: siteUrl || '',
         encryptedUsername: u.encrypted,
         usernameIv: u.iv,
         usernameAuthTag: u.authTag,
@@ -100,11 +102,12 @@ router.post('/credentials/bulk', requireAuth, async (req, res) => {
 })
 
 router.put('/credentials/:id', requireAuth, async (req, res) => {
-  const { clientName, gstin, username, password } = req.body
+  const { clientName, gstin, siteUrl, username, password } = req.body
   const update = {}
 
   if (clientName !== undefined) update.clientName = clientName
   if (gstin !== undefined) update.gstin = gstin
+  if (siteUrl !== undefined) update.siteUrl = siteUrl
 
   if (username) {
     const u = encrypt(username)

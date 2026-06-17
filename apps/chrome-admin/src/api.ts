@@ -25,6 +25,7 @@ interface EncryptedCredential {
   id: string
   clientName: string
   gstin: string
+  siteUrl: string
   encryptedUsername: string
   usernameIv: string
   usernameAuthTag: string
@@ -39,6 +40,7 @@ export interface Credential {
   id: string
   clientName: string
   gstin: string
+  siteUrl: string
   username: string
   password: string
   createdAt: string
@@ -73,6 +75,7 @@ export const credentialsApi = {
       id: c.id,
       clientName: c.clientName,
       gstin: c.gstin,
+      siteUrl: c.siteUrl,
       username: await decrypt(c.encryptedUsername, c.usernameIv, c.usernameAuthTag),
       password: await decrypt(c.encryptedPassword, c.passwordIv, c.passwordAuthTag),
       createdAt: c.createdAt,
@@ -80,7 +83,7 @@ export const credentialsApi = {
     })))
   },
 
-  add: (body: { clientName: string; gstin: string; username: string; password: string }) =>
+  add: (body: { clientName: string; gstin: string; siteUrl: string; username: string; password: string }) =>
     fetch(`${API_BASE}/api/admin/credentials`, {
       method: 'POST',
       headers: authHeaders(),
@@ -89,7 +92,7 @@ export const credentialsApi = {
 
   update: (
     id: string,
-    body: Partial<{ clientName: string; gstin: string; username: string; password: string }>
+    body: Partial<{ clientName: string; gstin: string; siteUrl: string; username: string; password: string }>
   ) =>
     fetch(`${API_BASE}/api/admin/credentials/${id}`, {
       method: 'PUT',
@@ -103,7 +106,7 @@ export const credentialsApi = {
       headers: authHeaders(),
     }).then(r => handle<{ success: boolean }>(r)),
 
-  bulk: (credentials: { clientName: string; gstin: string; username: string; password: string }[]) =>
+  bulk: (credentials: { clientName: string; gstin: string; siteUrl: string; username: string; password: string }[]) =>
     fetch(`${API_BASE}/api/admin/credentials/bulk`, {
       method: 'POST',
       headers: authHeaders(),

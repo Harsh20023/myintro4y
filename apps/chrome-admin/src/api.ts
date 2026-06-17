@@ -1,3 +1,5 @@
+const API_BASE = (import.meta.env.VITE_API_BASE as string) ?? ''
+
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem('chrome_admin_token') ?? ''
   return {
@@ -39,14 +41,14 @@ export interface Device {
 
 export const authApi = {
   requestOtp: (phone: string) =>
-    fetch('/api/auth/request-otp', {
+    fetch(`${API_BASE}/api/auth/request-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone }),
     }).then(r => handle<{ success: boolean }>(r)),
 
   verifyOtp: (phone: string, otp: string) =>
-    fetch('/api/auth/verify-otp', {
+    fetch(`${API_BASE}/api/auth/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, otp }),
@@ -55,11 +57,11 @@ export const authApi = {
 
 export const credentialsApi = {
   list: () =>
-    fetch('/api/admin/credentials', { headers: authHeaders() })
+    fetch(`${API_BASE}/api/admin/credentials`, { headers: authHeaders() })
       .then(r => handle<Credential[]>(r)),
 
   add: (body: { clientName: string; gstin: string; username: string; password: string }) =>
-    fetch('/api/admin/credentials', {
+    fetch(`${API_BASE}/api/admin/credentials`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify(body),
@@ -69,14 +71,14 @@ export const credentialsApi = {
     id: string,
     body: Partial<{ clientName: string; gstin: string; username: string; password: string }>
   ) =>
-    fetch(`/api/admin/credentials/${id}`, {
+    fetch(`${API_BASE}/api/admin/credentials/${id}`, {
       method: 'PUT',
       headers: authHeaders(),
       body: JSON.stringify(body),
     }).then(r => handle<{ success: boolean }>(r)),
 
   remove: (id: string) =>
-    fetch(`/api/admin/credentials/${id}`, {
+    fetch(`${API_BASE}/api/admin/credentials/${id}`, {
       method: 'DELETE',
       headers: authHeaders(),
     }).then(r => handle<{ success: boolean }>(r)),
@@ -84,6 +86,6 @@ export const credentialsApi = {
 
 export const devicesApi = {
   list: () =>
-    fetch('/api/admin/devices', { headers: authHeaders() })
+    fetch(`${API_BASE}/api/admin/devices`, { headers: authHeaders() })
       .then(r => handle<Device[]>(r)),
 }

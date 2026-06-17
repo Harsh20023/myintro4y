@@ -28,8 +28,12 @@ router.get('/credentials', requireAuth, async (_req, res) => {
       id: c._id,
       clientName: c.clientName,
       gstin: c.gstin,
-      username: decrypt(c.encryptedUsername, c.usernameIv, c.usernameAuthTag),
-      password: decrypt(c.encryptedPassword, c.passwordIv, c.passwordAuthTag),
+      encryptedUsername: c.encryptedUsername,
+      usernameIv: c.usernameIv,
+      usernameAuthTag: c.usernameAuthTag,
+      encryptedPassword: c.encryptedPassword,
+      passwordIv: c.passwordIv,
+      passwordAuthTag: c.passwordAuthTag,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     }))
@@ -57,6 +61,42 @@ router.post('/credentials', requireAuth, async (req, res) => {
   })
 
   res.status(201).json({ id: cred._id, clientName: cred.clientName })
+})
+
+router.post('/credentials/bulk', requireAuth, async (req, res) => {
+  const { credentials } = req.body
+  if (!Array.isArray(credentials) || credentials.length === 0)
+    return res.status(400).json({ error: 'credentials array required' })
+
+  let created = 0
+  const errors = []
+
+  for (const cred of credentials) {
+    const { clientName, gstin, username, password } = cred
+    if (!clientName || !username || !password) {
+      errors.push({ clientName: clientName || '?', reason: 'Missing name, username, or password' })
+      continue
+    }
+    try {
+      const u = encrypt(username)
+      const p = encrypt(password)
+      await Credential.create({
+        clientName,
+        gstin: gstin || '',
+        encryptedUsername: u.encrypted,
+        usernameIv: u.iv,
+        usernameAuthTag: u.authTag,
+        encryptedPassword: p.encrypted,
+        passwordIv: p.iv,
+        passwordAuthTag: p.authTag,
+      })
+      created++
+    } catch (err) {
+      errors.push({ clientName, reason: err.message })
+    }
+  }
+
+  res.json({ created, errors })
 })
 
 router.put('/credentials/:id', requireAuth, async (req, res) => {

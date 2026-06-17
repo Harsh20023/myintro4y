@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Credential, credentialsApi } from '../api'
 import EditCredentialModal from './EditCredentialModal'
+import BulkUploadModal from './BulkUploadModal'
 
 interface Props {
   credentials: Credential[]
@@ -12,6 +13,7 @@ interface Props {
 
 export default function CredentialsPanel({ credentials, loading, onRefresh, onSuccess, onError }: Props) {
   const [editing, setEditing] = useState<Credential | null>(null)
+  const [showBulk, setShowBulk] = useState(false)
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ clientName: '', gstin: '', username: '', password: '' })
   const [showPassMap, setShowPassMap] = useState<Record<string, boolean>>({})
@@ -55,10 +57,18 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
       <section className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-          <h2 className="text-white font-semibold">GST Credentials</h2>
-          <span className="text-xs bg-blue-900/50 text-blue-400 border border-blue-800 px-2.5 py-1 rounded-full font-semibold">
-            {loading ? '…' : credentials.length}
-          </span>
+          <div className="flex items-center gap-3">
+            <h2 className="text-white font-semibold">GST Credentials</h2>
+            <span className="text-xs bg-blue-900/50 text-blue-400 border border-blue-800 px-2.5 py-1 rounded-full font-semibold">
+              {loading ? '…' : credentials.length}
+            </span>
+          </div>
+          <button
+            onClick={() => setShowBulk(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-600 text-slate-400 hover:border-blue-600 hover:text-blue-400 text-xs font-medium transition-colors"
+          >
+            📂 Bulk Upload
+          </button>
         </div>
 
         {/* Add form */}
@@ -176,6 +186,14 @@ export default function CredentialsPanel({ credentials, loading, onRefresh, onSu
           credential={editing}
           onClose={() => setEditing(null)}
           onSaved={() => { onSuccess('Saved'); onRefresh() }}
+          onError={onError}
+        />
+      )}
+
+      {showBulk && (
+        <BulkUploadModal
+          onClose={() => setShowBulk(false)}
+          onDone={msg => { onSuccess(msg); onRefresh() }}
           onError={onError}
         />
       )}

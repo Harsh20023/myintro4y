@@ -1,3 +1,5 @@
+import { decrypt } from './crypto'
+
 const API_BASE = (import.meta.env.VITE_API_BASE as string) ?? ''
 
 function authHeaders(): HeadersInit {
@@ -17,6 +19,20 @@ async function handle<T>(r: Response): Promise<T> {
   }
   if (!r.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${r.status}`)
   return data as T
+}
+
+interface EncryptedCredential {
+  id: string
+  clientName: string
+  gstin: string
+  encryptedUsername: string
+  usernameIv: string
+  usernameAuthTag: string
+  encryptedPassword: string
+  passwordIv: string
+  passwordAuthTag: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Credential {
@@ -50,9 +66,19 @@ export const authApi = {
 }
 
 export const credentialsApi = {
-  list: () =>
-    fetch(`${API_BASE}/api/admin/credentials`, { headers: authHeaders() })
-      .then(r => handle<Credential[]>(r)),
+  list: async (): Promise<Credential[]> => {
+    const raw = await fetch(`${API_BASE}/api/admin/credentials`, { headers: authHeaders() })
+      .then(r => handle<EncryptedCredential[]>(r))
+    return Promise.all(raw.map(async c => ({
+      id: c.id,
+      clientName: c.clientName,
+      gstin: c.gstin,
+      username: await decrypt(c.encryptedUsername, c.usernameIv, c.usernameAuthTag),
+      password: await decrypt(c.encryptedPassword, c.passwordIv, c.passwordAuthTag),
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    })))
+  },
 
   add: (body: { clientName: string; gstin: string; username: string; password: string }) =>
     fetch(`${API_BASE}/api/admin/credentials`, {
@@ -76,6 +102,13 @@ export const credentialsApi = {
       method: 'DELETE',
       headers: authHeaders(),
     }).then(r => handle<{ success: boolean }>(r)),
+
+  bulk: (credentials: { clientName: string; gstin: string; username: string; password: string }[]) =>
+    fetch(`${API_BASE}/api/admin/credentials/bulk`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ credentials }),
+    }).then(r => handle<{ created: number; errors: { clientName: string; reason: string }[] }>(r)),
 }
 
 export const devicesApi = {

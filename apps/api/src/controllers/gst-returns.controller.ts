@@ -11,6 +11,7 @@ const UA            = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537
 
 const LAUNCH_ARGS = [
   '--no-sandbox', '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
   '--ignore-certificate-errors',
   '--disable-blink-features=AutomationControlled',
   `--user-agent=${UA}`,
@@ -175,7 +176,7 @@ export const GSTReturnsController = {
 
     let browser: Browser | null = null
     try {
-      browser = await puppeteer.launch({ headless: false, args: LAUNCH_ARGS })
+      browser = await puppeteer.launch({ headless: true, args: LAUNCH_ARGS })
       const page = await browser.newPage()
       await page.goto(LOGIN_URL, { waitUntil: 'networkidle2', timeout: 30_000 })
 

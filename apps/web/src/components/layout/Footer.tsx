@@ -21,7 +21,7 @@ export function Footer() {
               <span className="w-6 h-6 bg-brand-600 rounded-md flex items-center justify-center">
                 <Zap size={12} className="text-white" strokeWidth={2.5} />
               </span>
-              LedgerHQ
+              Conceptra
             </Link>
             <p className="text-sm leading-relaxed">Free business tools for Indian SMBs. No sign-up needed.</p>
           </div>
@@ -55,7 +55,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-ink-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-xs">© {new Date().getFullYear()} LedgerHQ. Made in India 🇮🇳</p>
+          <p className="text-xs">© {new Date().getFullYear()} Conceptra. Made in India 🇮🇳</p>
           <p className="text-xs">GST-compliant tools for Indian businesses</p>
         </div>
       </div>

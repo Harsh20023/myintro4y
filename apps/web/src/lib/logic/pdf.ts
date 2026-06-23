@@ -398,7 +398,7 @@ export async function downloadInvoicePDF(data: InvoiceData): Promise<void> {
     doc.setFontSize(7.5)
     doc.setTextColor(148, 163, 184)
     doc.text(`Page ${idx} of ${totalPages}`, W - M, pageH - 6, { align: 'right' })
-    doc.text('Generated via LedgerHQ System Engine', M, pageH - 6)
+    doc.text('Generated via Conceptra System Engine', M, pageH - 6)
   }
 
   const safeFilename = (data.invoiceNumber || 'Invoice').replace(/[^a-zA-Z0-9-_]/g, '_')

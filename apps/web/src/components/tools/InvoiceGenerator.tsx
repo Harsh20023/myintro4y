@@ -497,7 +497,7 @@
 //       {/* ── FORM PANEL ── */}
 //       <div className="xl:col-span-2 space-y-4 no-print">
 //         <div className="flex gap-2 justify-between items-center bg-slate-900 text-white p-3 rounded-xl">
-//           <h2 className="font-bold text-sm">LedgerHQ Engine</h2>
+//           <h2 className="font-bold text-sm">Conceptra Engine</h2>
 //           <div className="flex gap-1.5">
 //             <button type="button" onClick={resetInvoice} className="p-1.5 hover:bg-slate-800 rounded">
 //               <RefreshCw size={14} />
@@ -1205,7 +1205,7 @@ export function InvoiceGenerator() {
 
         {/* Top bar */}
         <div className="flex gap-2 justify-between items-center bg-slate-900 text-white p-3 rounded-xl">
-          <h2 className="font-bold text-sm">LedgerHQ Engine</h2>
+          <h2 className="font-bold text-sm">Conceptra Engine</h2>
           <div className="flex gap-1.5">
             <button type="button" onClick={resetInvoice} className="p-1.5 hover:bg-slate-800 rounded" title="Reset"><RefreshCw size={14} /></button>
             <button type="button" disabled={downloading} onClick={exportPDF}

@@ -5,14 +5,51 @@ import { useState, useRef, useEffect } from 'react'
 import { Menu, X, Zap, Lock, Unlock, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 
-const tools = [
-  { label: 'Invoice Generator',      href: '/tools/invoice-generator' },
+const gstTools = [
+  { label: 'Invoice Generator',       href: '/tools/invoice-generator' },
   { label: 'GST Calculator',          href: '/tools/gst-calculator' },
   { label: 'GST Late Fee Calculator', href: '/tools/gst-late-fee-calculator' },
   { label: 'GSTIN Checker',           href: '/tools/gst-number-checker' },
   { label: 'GST Filing Checker',      href: '/tools/gst-filing-checker' },
-  { label: 'Search by PAN',           href: '/tools/pan-checker' },
-  { label: 'GST Return Downloader',    href: '/tools/gst-return-downloader' },
+  { label: 'GST Return Downloader',   href: '/tools/gst-return-downloader' },
+]
+
+const incomeTaxSections = [
+  {
+    heading: 'Documents & Statements',
+    tools: [
+      { label: 'Form 16 / 16A Parser',     href: '/tools/form-16-parser' },
+      { label: 'AIS Analyser',             href: '/tools/ais-analyser' },
+    ],
+  },
+  {
+    heading: 'Tax Calculation',
+    tools: [
+      { label: 'Income Tax Calculator',    href: '/tools/income-tax-calculator' },
+      { label: 'TDS Calculator',           href: '/tools/tds-calculator' },
+      { label: 'Capital Gains Calculator', href: '/tools/capital-gains-calculator' },
+    ],
+  },
+  {
+    heading: 'Deductions & Savings',
+    tools: [
+      { label: 'Section 80C Planner',      href: '/tools/section-80c-planner' },
+      { label: 'HRA Exemption Calculator', href: '/tools/hra-calculator' },
+    ],
+  },
+  {
+    heading: 'Salary & CTC',
+    tools: [
+      { label: 'In-Hand Salary Calculator', href: '/tools/in-hand-salary-calculator' },
+    ],
+  },
+  {
+    heading: 'ITR Filing',
+    tools: [
+      { label: 'ITR Form Selector',        href: '/tools/itr-form-selector' },
+      { label: 'Search by PAN',            href: '/tools/pan-checker' },
+    ],
+  },
 ]
 
 export function Navbar() {
@@ -44,7 +81,7 @@ export function Navbar() {
           <span className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center">
             <Zap size={14} className="text-white" strokeWidth={2.5} />
           </span>
-          LedgerHQ
+          Conceptra
         </Link>
 
         {/* Desktop nav */}
@@ -58,14 +95,35 @@ export function Navbar() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute top-full left-0 mt-1.5 w-52 bg-white rounded-2xl shadow-lg border border-ink-100 py-1.5 z-50">
-                {tools.map(t => (
-                  <Link key={t.href} href={t.href}
-                    onClick={() => setDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-ink-700 hover:bg-ink-50 hover:text-ink-900 transition-colors">
-                    {t.label}
-                  </Link>
-                ))}
+              <div className="absolute top-full left-0 mt-1.5 bg-white rounded-2xl shadow-lg border border-ink-100 py-2 z-50 flex">
+                {/* GST Tools column */}
+                <div className="min-w-[200px]">
+                  <p className="px-4 pt-1 pb-1 text-xs font-semibold uppercase tracking-wider text-ink-400">GST Tools</p>
+                  {gstTools.map(t => (
+                    <Link key={t.href} href={t.href}
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-ink-700 hover:bg-ink-50 hover:text-ink-900 transition-colors whitespace-nowrap">
+                      {t.label}
+                    </Link>
+                  ))}
+                </div>
+                <div className="w-px bg-ink-100 my-2" />
+                {/* Income Tax Tools column */}
+                <div className="min-w-[220px] py-1">
+                  <p className="px-4 pt-1 pb-1 text-xs font-semibold uppercase tracking-wider text-ink-400">Income Tax Tools</p>
+                  {incomeTaxSections.map(section => (
+                    <div key={section.heading}>
+                      <p className="px-4 pt-2 pb-0.5 text-[10px] font-bold uppercase tracking-widest text-ink-300">{section.heading}</p>
+                      {section.tools.map(t => (
+                        <Link key={t.href} href={t.href}
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-1.5 text-sm text-ink-700 hover:bg-ink-50 hover:text-ink-900 transition-colors whitespace-nowrap">
+                          {t.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -109,11 +167,22 @@ export function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-ink-100 bg-ink-50 px-4 py-3 flex flex-col gap-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 px-3 pt-1 pb-0.5">Free Tools</p>
-          {tools.map(t => (
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 px-3 pt-1 pb-0.5">GST Tools</p>
+          {gstTools.map(t => (
             <Link key={t.href} href={t.href} className="btn-ghost justify-start" onClick={() => setMobileOpen(false)}>
               {t.label}
             </Link>
+          ))}
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 px-3 pt-2 pb-0.5">Income Tax Tools</p>
+          {incomeTaxSections.map(section => (
+            <div key={section.heading}>
+              <p className="px-3 pt-2 pb-0.5 text-[10px] font-bold uppercase tracking-widest text-ink-300">{section.heading}</p>
+              {section.tools.map(t => (
+                <Link key={t.href} href={t.href} className="btn-ghost justify-start" onClick={() => setMobileOpen(false)}>
+                  {t.label}
+                </Link>
+              ))}
+            </div>
           ))}
           <div className="pt-2 border-t border-ink-100 mt-1 flex flex-col gap-2">
             {!loading && user?.role === 'superadmin' && (

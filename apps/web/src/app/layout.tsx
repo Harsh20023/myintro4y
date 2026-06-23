@@ -4,16 +4,16 @@ import { AuthProvider } from '@/lib/AuthContext'
 
 export const metadata: Metadata = {
   title: {
-    default: 'LedgerHQ — Free Business Tools for Indian SMBs',
-    template: '%s | LedgerHQ',
+    default: 'Conceptra — Free Business Tools for Indian SMBs',
+    template: '%s | Conceptra',
   },
   description: 'Free invoice generator, GST calculator, salary calculator and more. Built for Indian businesses.',
   keywords: ['invoice generator', 'GST calculator', 'free business tools', 'India', 'SMB'],
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://LedgerHQ.in',
-    siteName: 'LedgerHQ',
+    url: 'https://Conceptra.in',
+    siteName: 'Conceptra',
   },
   robots: { index: true, follow: true },
 }

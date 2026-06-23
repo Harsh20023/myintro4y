@@ -100,7 +100,7 @@ export function AuthShell({ children, heading, subheading }: Props) {
             <span className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-900/40">
               <Zap size={16} className="text-white" strokeWidth={2.5} />
             </span>
-            <span className="font-display font-bold text-xl text-white">LedgerHQ</span>
+            <span className="font-display font-bold text-xl text-white">Conceptra</span>
           </Link>
 
           {/* Hero text */}
@@ -141,7 +141,7 @@ export function AuthShell({ children, heading, subheading }: Props) {
             <span className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
               <Zap size={14} className="text-white" strokeWidth={2.5} />
             </span>
-            <span className="font-display font-bold text-lg text-ink-900">LedgerHQ</span>
+            <span className="font-display font-bold text-lg text-ink-900">Conceptra</span>
           </Link>
         </div>
 
@@ -161,7 +161,7 @@ export function AuthShell({ children, heading, subheading }: Props) {
 
         {/* Footer note */}
         <p className="text-center text-[11px] text-ink-300 pb-6 px-4">
-          © {new Date().getFullYear()} LedgerHQ · Free forever for Indian businesses
+          © {new Date().getFullYear()} Conceptra · Free forever for Indian businesses
         </p>
       </div>
     </div>

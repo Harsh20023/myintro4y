@@ -2,14 +2,18 @@
   "name": "LedgerHQ",
   "private": true,
   "packageManager": "npm@11.11.0",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "ts-node": "^10.9.2",
     "turbo": "^2.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.9.3"
   }
 }

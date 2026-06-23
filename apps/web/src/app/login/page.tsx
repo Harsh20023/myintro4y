@@ -35,7 +35,7 @@ export default function LoginPage() {
   return (
     <AuthShell
       heading="Welcome back"
-      subheading="Log in to your LedgerHQ account"
+      subheading="Log in to your Conceptra account"
     >
       {/* Error */}
       {error && (

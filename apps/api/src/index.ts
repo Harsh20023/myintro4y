@@ -9,11 +9,27 @@ import googleRoutes from './routes/google'
 import configRoutes from './routes/config'
 import gstRoutes from './routes/gst'
 import gstReturnsRoutes from './routes/gst-returns'
+import tdsRoutes from './routes/tds'
+import ruleSetsRoutes, { calculate } from './routes/ruleSets'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
+const allowedOrigins = [
+  process.env.FRONTEND_URL ?? 'http://localhost:3000',
+  'http://localhost:3001',
+]
 
-app.use(cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:3000', credentials: true }))
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow non-browser requests (curl, Postman) which send no origin
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+}))
 app.use(express.json())
 app.use(passport.initialize())
 
@@ -26,6 +42,9 @@ app.use('/auth',   googleRoutes)
 app.use('/config', configRoutes)
 app.use('/gst',         gstRoutes)
 app.use('/gst/returns', gstReturnsRoutes)
+app.use('/tds',        tdsRoutes)
+app.use('/rule-sets',  ruleSetsRoutes)
+app.post('/calculate', calculate)
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`))

@@ -1,0 +1,8 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/dashboard/tds/schedules/page": "app/dashboard/tds/schedules/page.js",
+  "/dashboard/tds/codes/page": "app/dashboard/tds/codes/page.js",
+  "/dashboard/gst/rule-sets/[id]/page": "app/dashboard/gst/rule-sets/[id]/page.js",
+  "/dashboard/public-access/page": "app/dashboard/public-access/page.js",
+  "/dashboard/tds/code-years/page": "app/dashboard/tds/code-years/page.js"
+}

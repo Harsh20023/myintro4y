@@ -16,7 +16,8 @@
       "Bash(awk '{print $2, $11, $12}')",
       "Bash(kill -9 12086 12085)",
       "Bash(npx turbo *)",
-      "Bash(echo \"PID: $!\")"
+      "Bash(echo \"PID: $!\")",
+      "Bash(kill 52584 2514 2511 2519)"
     ]
   }
 }

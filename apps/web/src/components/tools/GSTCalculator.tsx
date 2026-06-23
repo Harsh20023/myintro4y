@@ -246,7 +246,7 @@ async function downloadPDF(items: LineItem[], txType: TransactionType, docTitle:
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
     doc.setTextColor(...GREY)
-    doc.text('Generated via LedgerHQ', M, pageH - 6)
+    doc.text('Generated via Conceptra', M, pageH - 6)
     doc.text(`Page ${p} of ${totalPages}`, W - M, pageH - 6, { align: 'right' })
   }
 

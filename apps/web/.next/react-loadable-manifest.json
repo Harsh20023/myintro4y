@@ -1,36 +1,38 @@
 {
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> canvg": {
-    "id": 70242,
+    "id": "../../../node_modules/jspdf/dist/jspdf.es.min.js -> canvg",
     "files": [
-      "static/chunks/425a1fef.69a85dd594062388.js",
-      "static/chunks/55.0b81d846fd89f90d.js"
+      "static/chunks/_app-pages-browser_node_modules_canvg_lib_index_es_js.js"
     ]
   },
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> dompurify": {
-    "id": 16742,
+    "id": "../../../node_modules/jspdf/dist/jspdf.es.min.js -> dompurify",
     "files": [
-      "static/chunks/742.1ab812bafaba254a.js"
+      "static/chunks/_app-pages-browser_node_modules_dompurify_dist_purify_js.js"
     ]
   },
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> html2canvas": {
-    "id": 55922,
+    "id": "../../../node_modules/jspdf/dist/jspdf.es.min.js -> html2canvas",
     "files": [
-      "static/chunks/da458701-0b0a3d83c905556d.js"
+      "static/chunks/_app-pages-browser_node_modules_html2canvas_dist_html2canvas_js.js"
+    ]
+  },
+  "components/tools/Form16Parser.tsx -> pdfjs-dist": {
+    "id": "components/tools/Form16Parser.tsx -> pdfjs-dist",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_pdfjs-dist_build_pdf_mjs.js"
     ]
   },
   "components/tools/GSTCalculator.tsx -> jspdf": {
-    "id": 24364,
+    "id": "components/tools/GSTCalculator.tsx -> jspdf",
     "files": [
-      "static/chunks/89ddd23d-544ce5a03d24a881.js",
-      "static/chunks/362-2993ac5ffcd0cad3.js"
+      "static/chunks/_app-pages-browser_node_modules_jspdf_dist_jspdf_es_min_js.js"
     ]
   },
   "components/tools/GSTCalculator.tsx -> jspdf-autotable": {
-    "id": 41167,
+    "id": "components/tools/GSTCalculator.tsx -> jspdf-autotable",
     "files": [
-      "static/chunks/89ddd23d-544ce5a03d24a881.js",
-      "static/chunks/362-2993ac5ffcd0cad3.js",
-      "static/chunks/167.baa005095c19ee61.js"
+      "static/chunks/_app-pages-browser_node_modules_jspdf-autotable_dist_jspdf_plugin_autotable_js.js"
     ]
   }
 }

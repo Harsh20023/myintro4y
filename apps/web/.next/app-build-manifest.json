@@ -16,65 +16,25 @@
       "static/css/css-src_styles_globals_css.css",
       "static/chunks/app/layout.js"
     ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
-    "/auth/callback/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/auth/callback/page.js"
-    ],
-    "/tools/income-tax-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/income-tax-calculator/page.js"
-    ],
-    "/tools/tds-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/tds-calculator/page.js"
-    ],
-    "/tools/capital-gains-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/capital-gains-calculator/page.js"
-    ],
-    "/tools/hra-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/hra-calculator/page.js"
-    ],
-    "/tools/in-hand-salary-calculator/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/in-hand-salary-calculator/page.js"
-    ],
-    "/tools/ais-analyser/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/ais-analyser/page.js"
-    ],
-    "/tools/form-16-parser/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/tools/form-16-parser/page.js"
-    ],
-    "/signup/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/signup/page.js"
-    ],
     "/tools/gst-calculator/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/tools/gst-calculator/page.js"
     ],
-    "/tools/gst-late-fee-calculator/page": [
+    "/tools/pan-checker/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/tools/gst-late-fee-calculator/page.js"
+      "static/chunks/app/tools/pan-checker/page.js"
+    ],
+    "/tools/gst-number-checker/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/tools/gst-number-checker/page.js"
+    ],
+    "/tools/itr-form-selector/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/tools/itr-form-selector/page.js"
     ]
   }
 }

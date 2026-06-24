@@ -14,7 +14,7 @@ const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/
 function validatePAN(value: string): { valid: boolean; message?: string } {
   if (!value) return { valid: false }
   if (value.length < 10) return { valid: false, message: 'PAN must be 10 characters' }
-  if (!PAN_RE.test(value)) return { valid: false, message: 'Invalid PAN format (e.g. AABCW7102K)' }
+  if (!PAN_RE.test(value)) return { valid: false, message: 'Invalid PAN format (e.g. ABBDW4182K)' }
   return { valid: true }
 }
 
@@ -119,7 +119,7 @@ export function PANChecker() {
                   setPhase('idle')
                 }
               }}
-              placeholder="e.g. AABCW7102K"
+              placeholder="e.g. ABBDW4182K"
               maxLength={10}
               className="font-mono tracking-widest"
               disabled={isLoading}

@@ -613,7 +613,7 @@ export function GSTReturnDownloader() {
           >
             <Input label="Username" value={username}
               onChange={e => { setUser(e.target.value); if (phase !== 'idle') { setPhase('idle'); setCImg('') } }}
-              placeholder="e.g. AABCW7102K_76"
+              placeholder="e.g. ABBDW4182K_96"
               disabled={phase === 'logging-in' || phase === 'captcha-loading'}
               autoComplete="username" />
 

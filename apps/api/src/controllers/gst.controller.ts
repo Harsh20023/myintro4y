@@ -141,7 +141,7 @@ export const GSTController = {
     const { gstin } = req.body as { gstin?: string }
     if (!gstin) return res.status(400).json({ message: 'gstin is required.' })
     const upper = gstin.trim().toUpperCase()
-    if (!GSTIN_REGEX.test(upper)) return res.status(400).json({ message: 'Invalid GSTIN format (e.g. 06AABCW7102K1ZD).' })
+    if (!GSTIN_REGEX.test(upper)) return res.status(400).json({ message: 'Invalid GSTIN format (e.g. 06ABBDW4182K1ZD).' })
 
     let browser: Browser | null = null
     try {
@@ -506,7 +506,7 @@ export const GSTController = {
     const { pan } = req.body as { pan?: string }
     if (!pan) return res.status(400).json({ message: 'pan is required.' })
     const upper = pan.trim().toUpperCase()
-    if (!PAN_REGEX.test(upper)) return res.status(400).json({ message: 'Invalid PAN format (e.g. AABCW7102K).' })
+    if (!PAN_REGEX.test(upper)) return res.status(400).json({ message: 'Invalid PAN format (e.g. ABBDW4182K).' })
 
     let browser: Browser | null = null
     try {

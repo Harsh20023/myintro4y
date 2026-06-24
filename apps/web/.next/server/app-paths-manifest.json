@@ -1,9 +1,7 @@
 {
-  "/tools/tds-calculator/page": "app/tools/tds-calculator/page.js",
   "/tools/gst-calculator/page": "app/tools/gst-calculator/page.js",
-  "/tools/gst-late-fee-calculator/page": "app/tools/gst-late-fee-calculator/page.js",
-  "/login/page": "app/login/page.js",
-  "/signup/page": "app/signup/page.js",
-  "/tools/income-tax-calculator/page": "app/tools/income-tax-calculator/page.js",
+  "/tools/pan-checker/page": "app/tools/pan-checker/page.js",
+  "/tools/itr-form-selector/page": "app/tools/itr-form-selector/page.js",
+  "/tools/gst-number-checker/page": "app/tools/gst-number-checker/page.js",
   "/(marketing)/page": "app/(marketing)/page.js"
 }

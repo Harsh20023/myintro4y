@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import {
-  FileText, Calculator, Clock, Search, Download, CreditCard,
+  FileText, Calculator, Clock, Search, Download,
   FileCheck, Receipt, Package, RefreshCw, ShieldCheck, ClipboardList,
   Truck, ArrowLeftRight, Layers, BookOpen, Landmark,
   TrendingUp, Wallet, Home, PiggyBank, BarChart2, User,
@@ -262,13 +262,6 @@ const INCOME_TAX_SECTIONS: IncomeTaxSection[] = [
   {
     title: 'ITR Filing',
     tools: [
-      {
-        icon: CreditCard,
-        title: 'Search by PAN',
-        desc: 'Find all GST registrations linked to a PAN number. View status and state.',
-        href: '/tools/pan-checker',
-        badge: 'Live', color: 'text-rose-600', bg: 'bg-rose-50', live: true,
-      },
       {
         icon: ListChecks,
         title: 'ITR Form Selector',

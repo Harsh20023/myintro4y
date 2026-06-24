@@ -392,7 +392,7 @@ export function GSTFilingChecker() {
                   setPhase('idle')
                 }
               }}
-              placeholder="e.g. 06AABCW7102K1ZD"
+              placeholder="e.g. 06ABBDW4182K1ZD"
               maxLength={15}
               className="font-mono tracking-wider"
               disabled={isLoading}

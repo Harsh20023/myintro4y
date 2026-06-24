@@ -33,8 +33,8 @@ const S = {
 //  GSTR-4          any             No    ₹25+₹25        ₹2,000  → ₹1,000
 //  GSTR-4          any             Yes   ₹10+₹10        ₹500    → ₹250
 //  GSTR-7          any             No    ₹25+₹25        ₹2,000  → ₹1,000
-//  GSTR-9          AATO ≤ ₹5 Cr   No    ₹25+₹25        0.04%   → 0.02% (0.0002)
-//  GSTR-9          AATO ₹5-20 Cr  No    ₹50+₹50        0.04%   → 0.02% (0.0002)
+//  GSTR-9          AATO ≤ ₹5 Cr   No    ₹25+₹25        0.04%   → 0.04% per head (0.0004)
+//  GSTR-9          AATO ₹5-20 Cr  No    ₹50+₹50        0.04%   → 0.04% per head (0.0004)
 //  GSTR-9          AATO > ₹20 Cr  No    ₹100+₹100      0.50%   → 0.25% (0.0025)
 //  GSTR-10         any             No    ₹100+₹100      none
 
@@ -144,19 +144,19 @@ export async function seedRuleSets() {
 
     // ── GSTR-9 Annual — 3 AATO bands (CBIC 07/2023) ──────────────────────────
     // Cap is % of total turnover — stored as per-head decimal (total % ÷ 2)
-    //   ≤ ₹5 Cr  & ₹5-20 Cr : 0.04% total → 0.0002 per head
+    //   ≤ ₹5 Cr  & ₹5-20 Cr : 0.04% total → 0.0004 per head  (user-confirmed 2026-06-23)
     //   > ₹20 Cr             : 0.50% total → 0.0025 per head
     {
       returnTypeCode: 'GSTR-9', returnTypeName: 'GSTR-9 (Annual – AATO ≤ ₹5 Cr)',
       frequency: 'annual', dueRuleType: 'annual', dueParam: 1231,  // MMDD = 31-Dec
       turnoverSlab: S.upto5Cr, isNil: false,
-      perDayCgst: 25, perDaySgst: 25, capType: 'percentOfTurnover', capValue: 0.0002,
+      perDayCgst: 25, perDaySgst: 25, capType: 'percentOfTurnover', capValue: 0.0004,
     },
     {
       returnTypeCode: 'GSTR-9', returnTypeName: 'GSTR-9 (Annual – AATO ₹5-20 Cr)',
       frequency: 'annual', dueRuleType: 'annual', dueParam: 1231,
       turnoverSlab: S.from5to20Cr, isNil: false,
-      perDayCgst: 50, perDaySgst: 50, capType: 'percentOfTurnover', capValue: 0.0002,
+      perDayCgst: 50, perDaySgst: 50, capType: 'percentOfTurnover', capValue: 0.0004,
     },
     {
       returnTypeCode: 'GSTR-9', returnTypeName: 'GSTR-9 (Annual – AATO > ₹20 Cr)',

@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* SSR fallback — Canvas theme (default before JS hydrates) */
+:root {
+  --ca-primary:       #1040A0;
+  --ca-primary-dark:  #1e3f8a;
+  --ca-primary-light: #dbeafe;
+  --ca-accent:        #D97706;
+  --ca-accent-dark:   #b45309;
+  --ca-accent-light:  #fef3c7;
+  --ca-whatsapp:      #25D366;
+  --ca-whatsapp-dark: #1aa34a;
+  --ca-bg:            #FFFFFF;
+  --ca-bg-soft:       #F8F9FC;
+  --ca-text:          #1A1A2E;
+  --ca-muted:         #6B7280;
+  --ca-border:        #E5E7EB;
+  --ca-gold:          #FBBF24;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #ffffff;
+  color: #1A1A2E;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+/* Hero badge float */
+@keyframes ca-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.ca-float   { animation: ca-float 4s ease-in-out infinite; }
+.ca-float-2 { animation: ca-float 4s ease-in-out 2s infinite; }
+
+/* Marquee animation — deliberately NOT using animate-* prefix */
+@keyframes marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+.dropdown-panel {
+  animation: dropdown-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -2,13 +2,16 @@
 node_modules/
 
 # Build outputs
-dist/
-build/
-.next/
-out/
+**/dist/
+**/build/
+**/.next/
+**/out/
 
 # Turbo cache
-.turbo/
+**/.turbo/
+
+# TypeScript
+**/*.tsbuildinfo
 
 # Environment files
 .env

@@ -101,10 +101,12 @@ export default function HomePage() {
       const ease = (t: number) =>
         t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
+      document.documentElement.style.scrollBehavior = 'auto'
       const tick = (now: number) => {
         const p = Math.min((now - began) / duration, 1)
         window.scrollTo(0, start + (target - start) * ease(p))
         if (p < 1) requestAnimationFrame(tick)
+        else document.documentElement.style.scrollBehavior = ''
       }
       requestAnimationFrame(tick)
     }, 2000)

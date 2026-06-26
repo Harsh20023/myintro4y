@@ -87,9 +87,28 @@ export default function HomePage() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('ref') !== 'tools') return
     history.replaceState(null, '', window.location.pathname)
+
     const timer = setTimeout(() => {
-      document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' })
-    }, 3000)
+      const el = document.getElementById('tools')
+      if (!el) return
+
+      const start    = window.scrollY
+      const target   = el.getBoundingClientRect().top + window.scrollY - 80
+      const duration = 1400
+      const began    = performance.now()
+
+      // ease-in-out cubic: slow start, smooth mid, gentle stop
+      const ease = (t: number) =>
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+
+      const tick = (now: number) => {
+        const p = Math.min((now - began) / duration, 1)
+        window.scrollTo(0, start + (target - start) * ease(p))
+        if (p < 1) requestAnimationFrame(tick)
+      }
+      requestAnimationFrame(tick)
+    }, 2000)
+
     return () => clearTimeout(timer)
   }, [])
 

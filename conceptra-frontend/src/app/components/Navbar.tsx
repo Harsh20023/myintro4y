@@ -142,7 +142,7 @@ export default function Navbar() {
                           {col.items.map((item) => (
                             <li key={item}>
                               <a
-                                href="https://gst.conceptra.co.in/#tools"
+                                href="https://gst.conceptra.co.in/?ref=tools"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="group flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 transition-all duration-150"
@@ -174,7 +174,7 @@ export default function Navbar() {
                   >
                     <span className="text-xs text-slate-500">All services launching soon</span>
                     <a
-                      href="https://gst.conceptra.co.in/#tools"
+                      href="https://gst.conceptra.co.in/?ref=tools"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-xs font-bold transition-opacity hover:opacity-70"
@@ -234,7 +234,7 @@ export default function Navbar() {
                       {col.items.map((item) => (
                         <a
                           key={item}
-                          href="https://gst.conceptra.co.in/#tools"
+                          href="https://gst.conceptra.co.in/?ref=tools"
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => setMobileOpen(false)}

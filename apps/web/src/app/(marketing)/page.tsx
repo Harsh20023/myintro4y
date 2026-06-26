@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { FileText, Calculator, Clock, Search, ArrowRight, Zap, Shield, Download, Lock, CreditCard } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { useAuth } from '@/lib/AuthContext'
+import { HeroAnimation } from '@/components/HeroAnimation'
 
 const TOOLS = [
   {
@@ -81,6 +83,16 @@ const FEATURES = [
 export default function HomePage() {
   const { user, requireLogin, loading } = useAuth()
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('ref') !== 'tools') return
+    history.replaceState(null, '', window.location.pathname)
+    const timer = setTimeout(() => {
+      document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' })
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
   const gated      = !loading && requireLogin && !user
   const toolHref   = (href: string) => gated ? '/login' : href
   const primaryCta = gated ? '/login' : '/tools/invoice-generator'
@@ -95,31 +107,37 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_rgba(139,92,246,0.05)_0%,_transparent_60%)]" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 text-xs font-medium rounded-full border border-brand-100 mb-6 animate-fade-in">
-              <Zap size={11} strokeWidth={2.5} />
-              Free tools for Indian SMBs
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-700 text-xs font-medium rounded-full border border-brand-100 mb-6 animate-fade-in">
+                <Zap size={11} strokeWidth={2.5} />
+                Free tools for Indian SMBs
+              </div>
+
+              <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl text-ink-950 leading-tight mb-5 animate-fade-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
+                Business tools that{' '}
+                <span className="text-brand-600 italic">actually work</span>
+              </h1>
+
+              <p className="text-ink-500 text-lg md:text-xl leading-relaxed mb-8 max-w-xl animate-fade-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
+                GST invoices, tax calculators, and more — free forever.
+                {gated ? ' Log in to access all tools.' : ' No sign-up. No watermarks. Just open and use.'}
+              </p>
+
+              <div className="flex flex-wrap gap-3 animate-fade-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
+                <Link href={primaryCta} className="btn-primary gap-2 px-6 py-3 text-base">
+                  {gated ? <><Lock size={14} /> Log in to access</> : <>Create Invoice Free <ArrowRight size={15} /></>}
+                </Link>
+                {!gated && (
+                  <Link href="#tools" className="btn-secondary gap-2 px-6 py-3 text-base">
+                    See all tools
+                  </Link>
+                )}
+              </div>
             </div>
 
-            <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl text-ink-950 leading-tight mb-5 animate-fade-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
-              Business tools that{' '}
-              <span className="text-brand-600 italic">actually work</span>
-            </h1>
-
-            <p className="text-ink-500 text-lg md:text-xl leading-relaxed mb-8 max-w-xl animate-fade-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
-              GST invoices, tax calculators, and more — free forever.
-              {gated ? ' Log in to access all tools.' : ' No sign-up. No watermarks. Just open and use.'}
-            </p>
-
-            <div className="flex flex-wrap gap-3 animate-fade-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
-              <Link href={primaryCta} className="btn-primary gap-2 px-6 py-3 text-base">
-                {gated ? <><Lock size={14} /> Log in to access</> : <>Create Invoice Free <ArrowRight size={15} /></>}
-              </Link>
-              {!gated && (
-                <Link href="#tools" className="btn-secondary gap-2 px-6 py-3 text-base">
-                  See all tools
-                </Link>
-              )}
+            <div className="hidden lg:block animate-fade-in" style={{ animationDelay: '0.4s', opacity: 0 }}>
+              <HeroAnimation />
             </div>
           </div>
         </div>

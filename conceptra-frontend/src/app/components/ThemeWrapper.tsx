@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-export type Theme = 'royal' | 'midnight' ;
+export type Theme = 'midnight' | 'royal' ;
 
 const THEME_VARS: Record<Theme, Record<string, string>> = {
   // Royal Blue + Gold (ICAI / CA firm classic)

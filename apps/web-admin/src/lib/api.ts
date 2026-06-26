@@ -297,3 +297,43 @@ export const tdsSchedulesApi = {
       headers: authHeaders(),
     }),
 }
+
+// ── Tax Meta (Surcharge / Year) ────────────────────────────────────────────────
+
+export const taxMetaApi = {
+  getSurcharge: (taxYear: string, entityClass: string) =>
+    req<any>(`/tax-meta/surcharge/${taxYear}/${entityClass}`),
+
+  updateSurcharge: (taxYear: string, entityClass: string, body: object) =>
+    req<any>(`/tax-meta/surcharge/${taxYear}/${entityClass}`, {
+      method: 'PUT', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  getYear: (taxYear: string) =>
+    req<any>(`/tax-meta/year/${taxYear}`),
+
+  updateYear: (taxYear: string, body: object) =>
+    req<any>(`/tax-meta/year/${taxYear}`, {
+      method: 'PUT', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+}
+
+// ── Tax Config ────────────────────────────────────────────────────────────────
+
+export interface TaxConfigStatus {
+  tax_year:    string
+  version:     string
+  compiled_at: string
+}
+
+export const taxConfigApi = {
+  getLatest: (taxYear = '2026-27') =>
+    req<{ data: TaxConfigStatus } | null>(`/tax-config/latest?tax_year=${taxYear}`)
+      .catch(() => null),
+
+  sync: (taxYear = '2026-27') =>
+    req<{ message: string; tax_year: string; version: string; compiled_at: string }>(
+      `/tax-config/sync?tax_year=${taxYear}`,
+      { method: 'POST', headers: authHeaders() },
+    ),
+}

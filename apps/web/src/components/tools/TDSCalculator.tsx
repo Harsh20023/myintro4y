@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect, useId } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { Plus, Trash2, Download, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Info, FileText, FileSpreadsheet } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { Input, Select, Card } from '@/components/ui'
+// Select is used in the global controls (FY dropdown)
 import {
-  TDS_SECTIONS, computeTDS, computeLateFees, fmtDate,
+  TDS_SECTIONS, computeTDS, computeSalaryTax, computeLateFees, fmtDate,
   getTDSDepositDueDate, getTDSReturnDueDate,
-  type TDSSectionId,
+  type TDSSectionId, type TDSSectionMeta, type AgeCategory, type ITaxRegime, type SalaryTaxResult,
 } from '@/lib/logic/tds'
+import { useTaxConfig } from '@/lib/hooks/useTaxConfig'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -26,21 +28,41 @@ const parseDate = (s: string): Date | null => {
 let _id = 0
 const nextId = () => `entry-${++_id}`
 
-const CATEGORY_ORDER = ['Salary', 'Business Payments', 'Rent', 'Interest & Dividends', 'Property', 'Other']
+const CATEGORY_ORDER = [
+  'Salary', 'Business Payments', 'Rent', 'Interest & Dividends',
+  'Property', 'Insurance', 'Winnings', 'Banking & Finance', 'Digital Assets', 'Other',
+]
 
-const SECTION_OPTIONS = (() => {
-  const grouped: Record<string, { value: string; label: string }[]> = {}
-  for (const s of TDS_SECTIONS) {
-    if (!grouped[s.category]) grouped[s.category] = []
-    grouped[s.category].push({ value: s.id, label: `Sec. ${s.section} — ${s.label}` })
-  }
-  return CATEGORY_ORDER.flatMap(cat =>
-    (grouped[cat] ?? []).map((opt, i) => ({
-      ...opt,
-      label: i === 0 && grouped[cat].length > 1 ? `── ${cat} ── ${opt.label}` : opt.label,
-    }))
-  )
-})()
+// New ITA 2025 section numbers + DB codes per section ID
+const SECTION_EXTRA: Record<string, { newSection: string; code: string }> = {
+  salary_192:              { newSection: '392',     code: '1001–1003' },
+  contractor_194C:         { newSection: '393(1)',  code: '1023, 1024' },
+  professional_194J:       { newSection: '393(1)',  code: '1027' },
+  technical_194J:          { newSection: '393(1)',  code: '1026' },
+  commission_194H:         { newSection: '393(1)',  code: '1006' },
+  payment_indiv_194M:      { newSection: '393(1)',  code: '1025' },
+  ecommerce_194O:          { newSection: '394(1)',  code: '1035' },
+  goods_purchase_194Q:     { newSection: '394(1)',  code: '1031' },
+  benefit_194R:            { newSection: '394(1)',  code: '1033' },
+  partner_payment_194T:    { newSection: '394(1)',  code: '1067' },
+  rent_building_194I:      { newSection: '393(1)',  code: '1009' },
+  rent_plant_194I:         { newSection: '393(1)',  code: '1008' },
+  rent_individual_194IB:   { newSection: '393(1)',  code: '1007' },
+  sec_193:                 { newSection: '392(1)',  code: '1019' },
+  dividend_194:            { newSection: '392(1)',  code: '1029' },
+  bank_interest_194A:      { newSection: '393(1)',  code: '1021' },
+  other_interest_194A:     { newSection: '393(1)',  code: '1021' },
+  property_purchase_194IA: { newSection: '393(1)',  code: '1010' },
+  jda_194IC:               { newSection: '393(1)',  code: '1011' },
+  insurance_comm_194D:     { newSection: '393(1)',  code: '1005' },
+  life_insurance_194DA:    { newSection: '393(1)',  code: '1030' },
+  lottery_194B:            { newSection: '392(1)',  code: '1060' },
+  winnings_194BB:          { newSection: '392(1)',  code: '1062' },
+  lottery_comm_194G:       { newSection: '393(1)',  code: '1063' },
+  cash_withdrawal_194N:    { newSection: '394(1)',  code: '1065' },
+  vda_194S:                { newSection: '394(1)',  code: '1037' },
+  royalty_194J:            { newSection: '393(1)',  code: '1027' },
+}
 
 const FY_OPTIONS = [
   { value: 'FY2025-26', label: 'FY 2025-26' },
@@ -53,15 +75,27 @@ const FY_OPTIONS = [
 interface TDSEntry {
   id:               string
   partyName:        string
-  partyPAN:         string   // optional — auto-implies panAvailable when filled
+  partyPAN:         string
   sectionId:        TDSSectionId
   amount:           string
   payeeType:        'individual_huf' | 'other'
-  panAvailable:     boolean  // used only when partyPAN is empty
-  deductionDate:    string   // YYYY-MM-DD  (date of payment / credit)
-  depositDate:      string   // YYYY-MM-DD
-  returnFilingDate: string   // YYYY-MM-DD
+  panAvailable:     boolean
+  deductionDate:    string
+  depositDate:      string
+  returnFilingDate: string
   expanded:         boolean
+  // Salary-specific (only used when sectionId === 'salary_192')
+  salaryRegime:        ITaxRegime
+  salaryAge:           AgeCategory
+  salaryOtherIncome:   string
+  salaryHRA:           string
+  salaryLTA:           string
+  salaryOtherExempt:   string
+  salary80C:           string
+  salary80D:           string
+  salary80CCD1B:       string
+  salary80CCD2:        string
+  salaryOtherDed:      string
 }
 
 function blankEntry(): TDSEntry {
@@ -77,6 +111,17 @@ function blankEntry(): TDSEntry {
     depositDate: '',
     returnFilingDate: '',
     expanded: true,
+    salaryRegime:      'new',
+    salaryAge:         'below_60',
+    salaryOtherIncome: '',
+    salaryHRA:         '',
+    salaryLTA:         '',
+    salaryOtherExempt: '',
+    salary80C:         '',
+    salary80D:         '',
+    salary80CCD1B:     '',
+    salary80CCD2:      '',
+    salaryOtherDed:    '',
   }
 }
 
@@ -222,13 +267,49 @@ function downloadExcel(
 
 // ── Compute all results ───────────────────────────────────────────────────────
 
-function computeAllResults(entries: TDSEntry[]) {
+function computeAllResults(
+  entries: TDSEntry[],
+  sections: TDSSectionMeta[] = TDS_SECTIONS,
+  itOverride?: Parameters<typeof computeSalaryTax>[1],
+) {
   const perEntry = entries.map(e => {
     const amt = num(e.amount)
-    const effectivePAN = e.partyPAN.trim().length > 0 ? true : e.panAvailable
-    const tds = amt > 0
-      ? computeTDS({ sectionId: e.sectionId, amount: amt, payeeType: e.payeeType, panAvailable: effectivePAN })
-      : null
+    const isSalary = e.sectionId === 'salary_192'
+    const section  = sections.find(s => s.id === e.sectionId)!
+
+    let tds: ReturnType<typeof computeTDS> = null
+
+    if (isSalary && amt > 0) {
+      const st = computeSalaryTax({
+        regime:          e.salaryRegime,
+        ageCategory:     e.salaryAge,
+        grossSalary:     amt,
+        otherIncome:     num(e.salaryOtherIncome),
+        hraExemption:    num(e.salaryHRA),
+        ltaExemption:    num(e.salaryLTA),
+        otherExemptions: num(e.salaryOtherExempt),
+        d80C:            num(e.salary80C),
+        d80D:            num(e.salary80D),
+        d80CCD1B:        num(e.salary80CCD1B),
+        d80CCD2:         num(e.salary80CCD2),
+        dOther:          num(e.salaryOtherDed),
+      }, itOverride)
+      tds = {
+        section,
+        amount:           amt,
+        threshold:        null,
+        isAboveThreshold: true,
+        applicableRate:   st.effectiveRate,
+        tdsAmount:        st.annualTax,
+        noPanRate:        0,
+        tdsAmountNoPan:   0,
+        netToPayee:       amt - st.annualTax,
+        salaryTax:        st,
+      }
+    } else if (!isSalary && amt > 0) {
+      const effectivePAN = e.partyPAN.trim().length > 0 ? true : e.panAvailable
+      tds = computeTDS({ sectionId: e.sectionId, amount: amt, payeeType: e.payeeType, panAvailable: effectivePAN }, sections)
+    }
 
     const deductDate  = parseDate(e.deductionDate)
     const depositDate = parseDate(e.depositDate)
@@ -257,21 +338,325 @@ function computeAllResults(entries: TDSEntry[]) {
   return { perEntry, totals }
 }
 
+// ── Salary Form ───────────────────────────────────────────────────────────────
+
+function SalaryForm({
+  entry, st, onChange,
+}: {
+  entry:    TDSEntry
+  st:       SalaryTaxResult | null
+  onChange: (patch: Partial<TDSEntry>) => void
+}) {
+  const isOld = entry.salaryRegime === 'old'
+
+  const ROW = 'grid grid-cols-1 sm:grid-cols-2 gap-3'
+  const ROW3 = 'grid grid-cols-1 sm:grid-cols-3 gap-3'
+
+  return (
+    <div className="space-y-4">
+      {/* Annual gross salary */}
+      <Input
+        label="Annual Gross Salary"
+        prefix="₹" type="number" min="0"
+        placeholder="e.g. 1200000"
+        value={entry.amount}
+        onChange={e => onChange({ amount: e.target.value })}
+      />
+
+      {/* Regime + Age */}
+      <div className={ROW}>
+        <div>
+          <p className="label-base mb-2">Tax Regime</p>
+          <div className="flex h-[42px]">
+            {(['new', 'old'] as const).map(r => (
+              <button key={r}
+                onClick={() => onChange({ salaryRegime: r })}
+                className={`flex-1 rounded-xl border text-xs font-medium transition-all first:rounded-r-none last:rounded-l-none ${
+                  entry.salaryRegime === r
+                    ? 'border-brand-300 bg-brand-50 text-brand-800 z-10'
+                    : 'border-ink-200 text-ink-500 hover:border-ink-300 bg-white'
+                }`}
+              >
+                {r === 'new' ? 'New Regime (Default)' : 'Old Regime'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="label-base mb-2">Employee Age</p>
+          <select
+            value={entry.salaryAge}
+            onChange={e => onChange({ salaryAge: e.target.value as AgeCategory })}
+            className="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm text-ink-700 bg-white focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-100"
+          >
+            <option value="below_60">Below 60 years</option>
+            <option value="senior_60_79">Senior Citizen (60–79 years)</option>
+            <option value="super_senior_80">Super Senior (80+ years)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Other income */}
+      <Input
+        label="Other Annual Income (interest, rent, etc.)"
+        prefix="₹" type="number" min="0" placeholder="0"
+        value={entry.salaryOtherIncome}
+        onChange={e => onChange({ salaryOtherIncome: e.target.value })}
+      />
+
+      {/* Old regime exemptions */}
+      {isOld && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50/40 p-4 space-y-3">
+          <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest">Old Regime — Allowance Exemptions</p>
+          <div className={ROW3}>
+            <Input label="HRA Exemption" prefix="₹" type="number" min="0" placeholder="0"
+              value={entry.salaryHRA} onChange={e => onChange({ salaryHRA: e.target.value })} />
+            <Input label="LTA Exemption" prefix="₹" type="number" min="0" placeholder="0"
+              value={entry.salaryLTA} onChange={e => onChange({ salaryLTA: e.target.value })} />
+            <Input label="Other Exemptions" prefix="₹" type="number" min="0" placeholder="0"
+              value={entry.salaryOtherExempt} onChange={e => onChange({ salaryOtherExempt: e.target.value })} />
+          </div>
+        </div>
+      )}
+
+      {/* Deductions */}
+      <div className="rounded-xl border border-ink-100 bg-ink-50/40 p-4 space-y-3">
+        <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest">Deductions</p>
+        <div className={ROW}>
+          <Input label="Extra NPS 80CCD(1B) — max ₹50,000" prefix="₹" type="number" min="0" placeholder="0"
+            value={entry.salary80CCD1B} onChange={e => onChange({ salary80CCD1B: e.target.value })} />
+          <Input
+            label={`Employer NPS 80CCD(2) — ${entry.salaryRegime === 'new' ? '14%' : '10%'} of basic`}
+            prefix="₹" type="number" min="0" placeholder="0"
+            value={entry.salary80CCD2} onChange={e => onChange({ salary80CCD2: e.target.value })} />
+        </div>
+        {isOld && (
+          <div className={ROW3}>
+            <Input label="80C / 80CCC / 80CCD(1) — max ₹1,50,000" prefix="₹" type="number" min="0" placeholder="0"
+              value={entry.salary80C} onChange={e => onChange({ salary80C: e.target.value })} />
+            <Input label="80D — Health Insurance" prefix="₹" type="number" min="0" placeholder="0"
+              value={entry.salary80D} onChange={e => onChange({ salary80D: e.target.value })} />
+            <Input label="Other Chapter VI-A" prefix="₹" type="number" min="0" placeholder="0"
+              value={entry.salaryOtherDed} onChange={e => onChange({ salaryOtherDed: e.target.value })} />
+          </div>
+        )}
+      </div>
+
+      {/* Tax Breakdown */}
+      {st && num(entry.amount) > 0 && (
+        <div className="rounded-xl border border-brand-100 bg-brand-50/20 overflow-hidden">
+          <p className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand-700 border-b border-brand-100 bg-brand-50/40">
+            Tax Computation Breakdown — AY 2026-27
+          </p>
+          <div className="divide-y divide-brand-50 text-sm">
+            {[
+              { label: 'Gross Salary',            value: st.grossSalary,       indent: false },
+              { label: `Less: Standard Deduction (${entry.salaryRegime === 'new' ? '₹75,000' : '₹50,000'})`, value: -st.stdDeduction, indent: true },
+              ...(isOld && st.totalExemptions > 0
+                ? [{ label: 'Less: HRA / LTA / Other Exemptions', value: -st.totalExemptions, indent: true }]
+                : []),
+              ...(num(entry.salaryOtherIncome) > 0
+                ? [{ label: 'Add: Other Income', value: num(entry.salaryOtherIncome), indent: false }]
+                : []),
+              ...(st.totalDeductions > 0
+                ? [{ label: 'Less: Chapter VI-A Deductions', value: -st.totalDeductions, indent: true }]
+                : []),
+              { label: 'Net Taxable Income', value: st.taxableIncome, indent: false, strong: true },
+              { label: 'Income Tax on Slabs', value: st.slabTax, indent: false },
+              ...(st.rebate87A > 0
+                ? [{ label: 'Less: Rebate u/s 87A', value: -st.rebate87A, indent: true }]
+                : []),
+              ...(st.surcharge > 0
+                ? [{ label: 'Add: Surcharge', value: st.surcharge, indent: false }]
+                : []),
+              { label: 'Add: 4% Health & Education Cess', value: st.cess, indent: false },
+              { label: 'Annual Tax Payable', value: st.annualTax, indent: false, strong: true, highlight: true },
+            ].map((row, i) => (
+              <div key={i} className={`flex items-center justify-between px-4 py-2 ${row.highlight ? 'bg-brand-50' : ''}`}>
+                <span className={`${row.indent ? 'pl-4 text-ink-500' : 'text-ink-700'} ${row.strong ? 'font-semibold text-ink-800' : ''}`}>
+                  {row.label}
+                </span>
+                <span className={`font-mono text-sm tabular-nums ${
+                  row.value < 0 ? 'text-teal-700' :
+                  row.highlight ? 'font-bold text-brand-700 text-base' :
+                  row.strong ? 'font-semibold text-ink-800' : 'text-ink-700'
+                }`}>
+                  {row.value < 0 ? `(${fmtINR(-row.value)})` : fmtINR(row.value)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 bg-brand-100/50 border-t border-brand-200">
+            <span className="text-sm font-bold text-brand-800">Monthly TDS (÷ 12)</span>
+            <span className="text-xl font-bold text-brand-700 font-mono">{fmtINR(st.monthlyTDS)}</span>
+          </div>
+          {st.rebate87A > 0 && (
+            <div className="px-4 py-2 bg-teal-50 border-t border-teal-100">
+              <p className="text-xs text-teal-700">
+                <CheckCircle className="inline-block mr-1 mb-0.5" size={11} />
+                Rebate u/s 87A applied — {fmtINR(st.rebate87A)} deducted from tax.
+                {entry.salaryRegime === 'new' && ' Effective zero-tax up to ₹12,00,000 taxable income.'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {num(entry.amount) === 0 && (
+        <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-3 text-xs text-ink-400 text-center">
+          Enter annual gross salary above to compute income tax
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Section Picker ────────────────────────────────────────────────────────────
+
+function SectionPicker({
+  value, sections, onChange,
+}: {
+  value: TDSSectionId
+  sections: TDSSectionMeta[]
+  onChange: (id: TDSSectionId) => void
+}) {
+  const current = sections.find(s => s.id === value)
+  const extra   = SECTION_EXTRA[value]
+
+  const [focus,  setFocus]  = useState<'old' | 'new' | 'code' | null>(null)
+  const [query,  setQuery]  = useState('')
+  const [hiIdx,  setHiIdx]  = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setFocus(null); setQuery('')
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const filtered = useMemo(() => {
+    if (!focus) return sections
+    const q = query.toLowerCase().trim()
+    if (!q) return sections
+    return sections.filter(s => {
+      const ex = SECTION_EXTRA[s.id]
+      if (focus === 'old')  return s.section.toLowerCase().includes(q)
+      if (focus === 'new')  return (ex?.newSection ?? '').toLowerCase().includes(q)
+      return (ex?.code ?? '').includes(q) || s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q)
+    })
+  }, [focus, query, sections])
+
+  useEffect(() => setHiIdx(0), [filtered])
+
+  function pick(sec: TDSSectionMeta) {
+    onChange(sec.id as TDSSectionId)
+    setFocus(null); setQuery('')
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!focus) return
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHiIdx(i => Math.min(i + 1, filtered.length - 1)) }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setHiIdx(i => Math.max(i - 1, 0)) }
+    if (e.key === 'Enter' && filtered[hiIdx]) pick(filtered[hiIdx])
+    if (e.key === 'Escape')    { setFocus(null); setQuery('') }
+  }
+
+  const oldDisplay  = focus === 'old'  ? query : (current?.section ?? '')
+  const newDisplay  = focus === 'new'  ? query : (extra?.newSection ?? '—')
+  const codeDisplay = focus === 'code' ? query : (extra?.code ?? '—')
+
+  const inputCls = (f: 'old' | 'new' | 'code') =>
+    `w-full rounded-xl border px-3 py-2.5 text-sm transition-all focus:outline-none cursor-pointer ${
+      focus === f
+        ? 'border-brand-400 ring-1 ring-brand-100 bg-white cursor-text'
+        : 'border-ink-200 bg-white hover:border-ink-300 text-ink-700'
+    }`
+
+  return (
+    <div ref={ref} className="relative" onKeyDown={handleKeyDown}>
+      <p className="label-base mb-2">TDS Section</p>
+      <div className="grid grid-cols-3 gap-2">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-ink-400 mb-1">Old Section</p>
+          <input value={oldDisplay} readOnly={focus !== 'old'}
+            onClick={() => { setFocus('old'); setQuery('') }}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="e.g. 194J"
+            className={inputCls('old')} />
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-ink-400 mb-1">New Section (ITA 2025)</p>
+          <input value={newDisplay} readOnly={focus !== 'new'}
+            onClick={() => { setFocus('new'); setQuery('') }}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="e.g. 393"
+            className={inputCls('new')} />
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-ink-400 mb-1">Code / Description</p>
+          <input value={codeDisplay} readOnly={focus !== 'code'}
+            onClick={() => { setFocus('code'); setQuery('') }}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="e.g. 1027 or 'contractor'"
+            className={inputCls('code')} />
+        </div>
+      </div>
+
+      {focus && (
+        <div className="absolute z-30 left-0 right-0 mt-1 bg-white rounded-xl border border-ink-200 shadow-xl max-h-72 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-ink-400">No sections match "{query}"</p>
+          ) : filtered.map((s, i) => {
+            const ex = SECTION_EXTRA[s.id]
+            return (
+              <button key={s.id} type="button"
+                onMouseEnter={() => setHiIdx(i)}
+                onClick={() => pick(s)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                  i === hiIdx ? 'bg-brand-50' : 'hover:bg-ink-50'
+                } ${i > 0 ? 'border-t border-ink-50' : ''}`}
+              >
+                <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded shrink-0">
+                  {s.section}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-ink-800 truncate">{s.label}</p>
+                  <p className="text-xs text-ink-400 truncate">{s.desc}</p>
+                </div>
+                <div className="shrink-0 text-right space-y-0.5">
+                  {ex && <p className="text-xs text-ink-400 font-mono">{ex.newSection}</p>}
+                  {ex && <p className="text-[10px] text-ink-300">#{ex.code}</p>}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Entry card ────────────────────────────────────────────────────────────────
 
 function EntryCard({
-  entry, index, result,
+  entry, index, result, sections,
   onChange, onDelete,
 }: {
   entry:    TDSEntry
   index:    number
   result:   ReturnType<typeof computeAllResults>['perEntry'][number]
+  sections: TDSSectionMeta[]
   onChange: (id: string, patch: Partial<TDSEntry>) => void
   onDelete: (id: string) => void
 }) {
   const { tds, lateFees } = result
-  const section = TDS_SECTIONS.find(s => s.id === entry.sectionId)!
-  const isBelowThreshold = tds !== null && !tds.isAboveThreshold
+  const section = sections.find(s => s.id === entry.sectionId)!
+  const isSalary = entry.sectionId === 'salary_192'
+  const isBelowThreshold = tds !== null && !tds.isAboveThreshold && !isSalary
   const hasPAN = entry.partyPAN.trim().length > 0
 
   const deductDate = parseDate(entry.deductionDate)
@@ -289,7 +674,7 @@ function EntryCard({
         </span>
         <input
           type="text"
-          placeholder="Party / Vendor name"
+          placeholder={isSalary ? 'Employee name' : 'Party / Vendor name'}
           value={entry.partyName}
           onChange={e => set({ partyName: e.target.value })}
           className="flex-1 text-sm font-semibold bg-transparent outline-none text-ink-800 placeholder:text-ink-300 min-w-0"
@@ -297,6 +682,11 @@ function EntryCard({
         {isBelowThreshold && (
           <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-100 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
             <AlertCircle size={10} /> Below threshold — TDS not applicable
+          </span>
+        )}
+        {isSalary && tds?.salaryTax && (
+          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2 py-0.5 shrink-0">
+            Monthly TDS: {fmtINR(tds.salaryTax.monthlyTDS)}
           </span>
         )}
         <button
@@ -317,108 +707,230 @@ function EntryCard({
 
       {entry.expanded && (
         <div className="p-5 space-y-4">
-          {/* Party name + PAN */}
+          {/* Employee / Party name + PAN */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Party / Vendor Name"
-              placeholder="e.g. ABC Consultants Pvt Ltd"
+              label={isSalary ? 'Employee Name' : 'Party / Vendor Name'}
+              placeholder={isSalary ? 'e.g. Rahul Sharma' : 'e.g. ABC Consultants Pvt Ltd'}
               value={entry.partyName}
               onChange={e => set({ partyName: e.target.value })}
             />
             <Input
-              label="PAN of Party (optional)"
+              label="PAN (optional)"
               placeholder="AAAAA0000A"
               value={entry.partyPAN}
               onChange={e => set({ partyPAN: e.target.value.toUpperCase() })}
             />
           </div>
 
-          {/* Row 1: Section + Amount + Payee type */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-1">
-              <Select
-                label="TDS Section"
-                value={entry.sectionId}
-                options={SECTION_OPTIONS}
-                onChange={e => set({ sectionId: e.target.value as TDSSectionId })}
-              />
-            </div>
-            <div>
-              <Input
-                label="Payment / Invoice Amount"
-                prefix="₹" type="number" min="0"
-                placeholder="e.g. 50000"
-                value={entry.amount}
-                onChange={e => set({ amount: e.target.value })}
-              />
-            </div>
-            <div>
-              <p className="label-base mb-2">Payee Type</p>
-              <div className="flex gap-2 h-[42px]">
-                {([
-                  { value: 'individual_huf', label: 'Ind / HUF' },
-                  { value: 'other',           label: 'Co / Firm' },
-                ] as const).map(opt => (
-                  <button key={opt.value}
-                    onClick={() => set({ payeeType: opt.value })}
-                    className={`flex-1 rounded-xl border text-xs font-medium transition-all ${
-                      entry.payeeType === opt.value
-                        ? 'border-brand-300 bg-brand-50 text-brand-800'
-                        : 'border-ink-200 text-ink-500 hover:border-ink-300'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Section picker — 3-way lookup */}
+          <SectionPicker
+            value={entry.sectionId}
+            sections={sections}
+            onChange={id => set({ sectionId: id, amount: '' })}
+          />
 
-          {/* Section info + PAN row */}
-          <div className="flex flex-wrap items-start gap-3">
-            <div className="flex-1 min-w-0 rounded-xl border border-ink-100 bg-ink-50 px-3 py-2">
-              <p className="text-xs font-semibold text-ink-700">{section.label}</p>
-              <p className="text-xs text-ink-400 mt-0.5">{section.desc}</p>
-              {section.thresholdNote && (
-                <p className="text-xs text-amber-600 mt-1">ℹ {section.thresholdNote}</p>
+          {/* ── SALARY branch ── */}
+          {isSalary ? (
+            <SalaryForm entry={entry} st={tds?.salaryTax ?? null} onChange={set} />
+          ) : (
+            <div className="space-y-4">
+              {/* Auto-populated section info + rates panel */}
+              <div className="rounded-xl border border-ink-100 overflow-hidden">
+                {/* Header: section description + threshold */}
+                <div className="flex items-start gap-4 px-4 py-3 bg-ink-50/70 border-b border-ink-100">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink-800">Sec. {section.section} — {section.label}</p>
+                    <p className="text-xs text-ink-400 mt-0.5">{section.desc}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    {section.threshold !== null ? (
+                      <>
+                        <p className="text-[10px] uppercase tracking-widest text-ink-400">Threshold</p>
+                        <p className="text-xs font-semibold text-amber-700 max-w-[200px] text-right leading-snug mt-0.5">
+                          {section.thresholdNote ?? `₹${section.threshold.toLocaleString('en-IN')}`}
+                        </p>
+                      </>
+                    ) : (
+                      <span className="text-[11px] text-ink-400 border border-ink-200 bg-white rounded-full px-2 py-0.5">
+                        No fixed threshold
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Rate cards — click to switch payee type for Sec. 194C */}
+                <div className="px-4 py-3 flex flex-wrap items-center gap-2">
+                  {section.rates.map((r, i) => {
+                    const isActive = !section.hasPayeeType || r.payeeType === entry.payeeType
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() =>
+                          section.hasPayeeType && r.payeeType &&
+                          set({ payeeType: r.payeeType as 'individual_huf' | 'other' })
+                        }
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-all
+                          ${section.hasPayeeType ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}
+                          ${isActive
+                            ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-100 shadow-sm'
+                            : 'border-ink-200 bg-white opacity-50 hover:opacity-70'
+                          }`}
+                      >
+                        <span className="text-xs text-ink-500 whitespace-nowrap">{r.label}</span>
+                        <span className={`text-xl font-black tabular-nums ${isActive ? 'text-brand-700' : 'text-ink-400'}`}>
+                          {r.rate}%
+                        </span>
+                        {isActive && section.hasPayeeType && <CheckCircle size={13} className="text-brand-500 shrink-0" />}
+                      </button>
+                    )
+                  })}
+
+                  {/* No PAN rate */}
+                  <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50/60 px-3 py-2">
+                    <span className="text-xs text-red-400 whitespace-nowrap">No PAN (Sec. 206AA)</span>
+                    <span className="text-xl font-black text-red-500">{section.noPanRate}%</span>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {section.notes.length > 0 && (
+                  <div className="px-4 pb-3 border-t border-ink-50 pt-2 space-y-0.5">
+                    {section.notes.map((n, i) => (
+                      <p key={i} className="text-[11px] text-ink-400">• {n}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Amount + PAN */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Payment / Invoice Amount"
+                  prefix="₹" type="number" min="0"
+                  placeholder="e.g. 50000"
+                  value={entry.amount}
+                  onChange={e => set({ amount: e.target.value })}
+                />
+
+                {hasPAN ? (
+                  <div className="flex flex-col justify-end pb-0.5">
+                    <p className="label-base mb-2">PAN Status</p>
+                    <span className="inline-flex items-center gap-2 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                      <CheckCircle size={14} /> PAN on record — {entry.partyPAN}
+                    </span>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="label-base mb-2">PAN Furnished?</p>
+                    <div className="flex h-[42px]">
+                      {([
+                        { value: true,  label: 'Yes — PAN given' },
+                        { value: false, label: 'No PAN (Sec. 206AA)' },
+                      ] as const).map(opt => (
+                        <button key={String(opt.value)}
+                          type="button"
+                          onClick={() => set({ panAvailable: opt.value })}
+                          className={`flex-1 px-3 text-xs font-medium border transition-all first:rounded-l-xl last:rounded-r-xl ${
+                            entry.panAvailable === opt.value
+                              ? opt.value
+                                ? 'border-brand-400 bg-brand-50 text-brand-800 z-10 shadow-sm'
+                                : 'border-red-400 bg-red-50 text-red-700 z-10 shadow-sm'
+                              : 'border-ink-200 text-ink-500 bg-white hover:border-ink-300'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Live TDS result */}
+              {num(entry.amount) > 0 && tds ? (
+                tds.isAboveThreshold ? (
+                  <div className="rounded-xl border border-brand-100 overflow-hidden">
+                    {/* Core numbers */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-brand-50 border-b border-brand-100">
+                      {([
+                        { label: 'Taxable Amount', value: fmtINR(tds.amount), cls: '' },
+                        { label: 'TDS Rate Applied', value: `${tds.applicableRate}%`, cls: '' },
+                        { label: 'TDS Deducted', value: fmtINR(tds.tdsAmount), cls: 'bg-brand-50' },
+                        { label: 'Net to Payee', value: fmtINR(tds.netToPayee), cls: '' },
+                      ] as { label: string; value: string; cls: string }[]).map((col, i) => (
+                        <div key={i} className={`px-3 py-3 text-center ${col.cls}`}>
+                          <p className="text-[10px] uppercase tracking-widest text-ink-400 mb-1">{col.label}</p>
+                          <p className={`font-bold ${i === 2 ? 'text-brand-700 text-xl' : 'text-ink-700 text-sm'}`}>{col.value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Late fees — only if dates entered and late */}
+                    {(lateFees?.totalPenalty ?? 0) > 0 && (
+                      <>
+                        <div className="grid grid-cols-2 divide-x divide-amber-100 bg-amber-50/40 border-b border-amber-100">
+                          <div className="px-3 py-2.5 text-center">
+                            <p className="text-[10px] uppercase tracking-widest text-amber-500 mb-0.5">Interest Sec. 201(1A)</p>
+                            <p className="text-sm font-bold text-amber-700">{fmtINR(lateFees!.interest201Amount)}</p>
+                            <p className="text-[10px] text-amber-400">{lateFees!.interest201Months} month(s) × 1.5%</p>
+                          </div>
+                          <div className="px-3 py-2.5 text-center">
+                            <p className="text-[10px] uppercase tracking-widest text-red-400 mb-0.5">Late Fee Sec. 234E</p>
+                            <p className="text-sm font-bold text-red-600">{fmtINR(lateFees!.fee234EAmount)}</p>
+                            <p className="text-[10px] text-red-400">{lateFees!.fee234EDays} day(s) × ₹200</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between px-4 py-2.5 bg-ink-50">
+                          <span className="text-xs font-semibold text-ink-600">Grand Total Payable</span>
+                          <span className="text-lg font-bold text-brand-700">{fmtINR(result.totalLiability)}</span>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Alerts */}
+                    {((!hasPAN && !entry.panAvailable) || ((hasPAN || entry.panAvailable) && tds.noPanRate > tds.applicableRate)) && (
+                      <div className="px-3 py-2 border-t border-ink-50 flex flex-wrap gap-2">
+                        {!hasPAN && !entry.panAvailable && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                            <AlertCircle size={10} /> No PAN — deducting at {tds.noPanRate}% u/s 206AA instead of {tds.applicableRate}%
+                          </span>
+                        )}
+                        {(hasPAN || entry.panAvailable) && tds.noPanRate > tds.applicableRate && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-ink-500 bg-ink-50 border border-ink-200 rounded-full px-2 py-0.5">
+                            <Info size={10} /> Without PAN this would be {fmtINR(tds.tdsAmountNoPan)} @ {tds.noPanRate}%
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Below threshold */
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 flex items-start gap-3">
+                    <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-800">Below Threshold — TDS Not Applicable</p>
+                      <p className="text-xs text-amber-600 mt-1">
+                        {fmtINR(tds.amount)} is below the threshold of{' '}
+                        {section.thresholdNote ?? fmtINR(section.threshold ?? 0)}.
+                        TDS becomes applicable once the threshold is crossed.
+                      </p>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-3 text-xs text-ink-400 text-center">
+                  Enter payment amount above — TDS will be computed instantly
+                </div>
               )}
             </div>
-            {hasPAN ? (
-              <div className="flex items-end pb-1">
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-                  <CheckCircle size={13} /> PAN on record
-                </span>
-              </div>
-            ) : (
-              <div className="shrink-0">
-                <p className="label-base mb-2">PAN Furnished</p>
-                <div className="flex h-[42px]">
-                  {([
-                    { value: true,  label: 'Yes — PAN given' },
-                    { value: false, label: 'No PAN (Sec. 206AA)' },
-                  ] as const).map(opt => (
-                    <button key={String(opt.value)}
-                      onClick={() => set({ panAvailable: opt.value })}
-                      className={`px-3 text-xs font-medium border transition-all first:rounded-l-xl last:rounded-r-xl ${
-                        entry.panAvailable === opt.value
-                          ? opt.value
-                            ? 'border-brand-300 bg-brand-50 text-brand-800 z-10'
-                            : 'border-red-300 bg-red-50 text-red-700 z-10'
-                          : 'border-ink-200 text-ink-500 hover:border-ink-300 bg-white'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          )}
 
-          {/* Date row */}
+          {/* Date row — common to both salary and non-salary */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-base block mb-1.5">Date of Paid / Credited</label>
+              <label className="label-base block mb-1.5">{isSalary ? 'Month of Salary' : 'Date of Paid / Credited'}</label>
               <input type="date" value={entry.deductionDate}
                 onChange={e => set({ deductionDate: e.target.value })}
                 className="w-full rounded-xl border border-ink-200 px-3 py-2 text-sm text-ink-700 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-100 bg-white" />
@@ -457,53 +969,23 @@ function EntryCard({
             </div>
           </div>
 
-          {/* Result row */}
-          {tds && (
-            <div className={`rounded-xl border overflow-hidden ${tds.isAboveThreshold ? '' : 'opacity-60'}`}>
-              <div className="grid grid-cols-2 sm:grid-cols-5 divide-x divide-ink-100 border-b border-ink-100 bg-ink-50/50">
-                {[
-                  { label: 'TDS Rate',    value: `${tds.applicableRate}%`,       sub: tds.isAboveThreshold ? 'Applicable' : 'Below threshold' },
-                  { label: 'TDS Amount',  value: fmtINR(tds.tdsAmount),          sub: `Net to payee: ${fmtINR(tds.netToPayee)}` },
-                  { label: 'Interest Sec. 201(1A)', value: lateFees?.interest201Amount ? fmtINR(lateFees.interest201Amount) : '—',
-                    sub: lateFees?.interest201Amount ? `${lateFees.interest201Months} month(s) × 1.5%` : 'No late deposit', warn: lateFees?.isDepositLate },
-                  { label: 'Late Fee Sec. 234E', value: lateFees?.fee234EAmount ? fmtINR(lateFees.fee234EAmount) : '—',
-                    sub: lateFees?.fee234EAmount ? `${lateFees.fee234EDays} day(s) × ₹200` : 'Return filed on time', warn: lateFees?.isReturnLate },
-                  { label: 'Total Liability', value: fmtINR(result.totalLiability), sub: 'TDS + Interest + Fee', total: true },
-                ].map((col, i) => (
-                  <div key={i} className="px-3 py-2.5 text-center">
-                    <p className="text-[11px] text-ink-400 mb-0.5">{col.label}</p>
-                    <p className={`text-sm font-bold ${col.total ? 'text-brand-700' : col.warn ? 'text-amber-600' : 'text-ink-800'}`}>
-                      {col.value}
-                    </p>
-                    <p className={`text-[10px] mt-0.5 ${col.warn ? 'text-amber-500' : 'text-ink-400'}`}>{col.sub}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Threshold + PAN alerts */}
-              <div className="px-3 py-2 flex flex-wrap gap-2">
-                {!tds.isAboveThreshold && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-brand-700 bg-brand-50 border border-brand-200 rounded-full px-2 py-0.5">
-                    <CheckCircle size={10} /> Below threshold — TDS not applicable
-                  </span>
-                )}
-                {!entry.panAvailable && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
-                    <AlertCircle size={10} /> No PAN — TDS @ {tds.noPanRate}% (Sec. 206AA)
-                  </span>
-                )}
-                {entry.panAvailable && tds.tdsAmountNoPan > tds.tdsAmount && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-                    <AlertCircle size={10} /> Without PAN would be {fmtINR(tds.tdsAmountNoPan)} @ {tds.noPanRate}%
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {!tds && num(entry.amount) === 0 && (
-            <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-3 text-xs text-ink-400 text-center">
-              Enter payment amount to compute TDS
+          {/* Late-fee summary for salary entries */}
+          {isSalary && (lateFees?.totalPenalty ?? 0) > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              {lateFees?.isDepositLate && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-center">
+                  <p className="text-[11px] text-amber-600 mb-0.5">Interest Sec. 201(1A)</p>
+                  <p className="text-sm font-bold text-amber-700">{fmtINR(lateFees.interest201Amount)}</p>
+                  <p className="text-[10px] text-amber-500">{lateFees.interest201Months} month(s) × 1.5%</p>
+                </div>
+              )}
+              {lateFees?.isReturnLate && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-center">
+                  <p className="text-[11px] text-red-600 mb-0.5">Late Fee Sec. 234E</p>
+                  <p className="text-sm font-bold text-red-700">{fmtINR(lateFees.fee234EAmount)}</p>
+                  <p className="text-[10px] text-red-400">{lateFees.fee234EDays} day(s) × ₹200</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -515,6 +997,9 @@ function EntryCard({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function TDSCalculator() {
+  const taxConfig                = useTaxConfig()
+  const liveSections: TDSSectionMeta[] = taxConfig?.tds_sections ?? TDS_SECTIONS
+
   const [fy, setFY]             = useState('FY2025-26')
   const [deductorName, setName] = useState('')
   const [deductorTAN, setTAN]   = useState('')
@@ -530,7 +1015,11 @@ export function TDSCalculator() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const results = useMemo(() => computeAllResults(entries), [entries])
+  const results = useMemo(
+    () => computeAllResults(entries, liveSections, taxConfig?.income_tax),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [entries, liveSections],
+  )
 
   const addEntry = () =>
     setEntries(prev => [...prev, blankEntry()])
@@ -616,6 +1105,7 @@ export function TDSCalculator() {
             entry={entry}
             index={i}
             result={results.perEntry[i]}
+            sections={liveSections}
             onChange={updateEntry}
             onDelete={deleteEntry}
           />

@@ -12,9 +12,11 @@ const navItems = [
 ]
 
 const tdsItems = [
-  { href: '/dashboard/tds/codes',      label: 'Codes' },
-  { href: '/dashboard/tds/code-years', label: 'Code Years' },
-  { href: '/dashboard/tds/schedules',  label: 'Schedules' },
+  { href: '/dashboard/tax-rates',      label: 'Tax Rates' },
+  { href: '/dashboard/tax-config',     label: 'Sync to Live' },
+  { href: '/dashboard/tds/codes',      label: 'Codes (advanced)' },
+  { href: '/dashboard/tds/code-years', label: 'Code Years (advanced)' },
+  { href: '/dashboard/tds/schedules',  label: 'Schedules (advanced)' },
 ]
 
 const gstItems = [

@@ -2,18 +2,32 @@
 
 export type TDSSectionId =
   | 'salary_192'
+  | 'sec_193'
+  | 'dividend_194'
   | 'bank_interest_194A'
   | 'other_interest_194A'
+  | 'lottery_194B'
+  | 'winnings_194BB'
   | 'contractor_194C'
+  | 'insurance_comm_194D'
+  | 'life_insurance_194DA'
+  | 'lottery_comm_194G'
   | 'commission_194H'
   | 'rent_building_194I'
   | 'rent_plant_194I'
+  | 'rent_individual_194IB'
+  | 'jda_194IC'
   | 'property_purchase_194IA'
   | 'professional_194J'
   | 'technical_194J'
-  | 'lottery_194B'
-  | 'dividend_194'
   | 'royalty_194J'
+  | 'payment_indiv_194M'
+  | 'cash_withdrawal_194N'
+  | 'ecommerce_194O'
+  | 'goods_purchase_194Q'
+  | 'benefit_194R'
+  | 'vda_194S'
+  | 'partner_payment_194T'
 
 export interface TDSSectionMeta {
   id:           TDSSectionId
@@ -151,6 +165,119 @@ export const TDS_SECTIONS: TDSSectionMeta[] = [
     noPanRate: 20,
     notes: ['10% applies for royalty not covered by the 2% technical services carve-out.'],
   },
+  // ── Additional sections ───────────────────────────────────────────────────
+  {
+    id: 'sec_193', section: '193', label: 'Interest on Securities', category: 'Interest & Dividends',
+    desc: 'Interest on debentures, bonds, government securities paid by company or government',
+    isSalary: false, threshold: 5_000, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 10 }],
+    noPanRate: 20,
+    notes: ['Threshold ₹5,000 per year.', 'No TDS on certain government securities paid to residents.'],
+  },
+  {
+    id: 'winnings_194BB', section: '194BB', label: 'Horse Race Winnings', category: 'Winnings',
+    desc: 'Winnings from horse race from any race club or bookmaker',
+    isSalary: false, threshold: 10_000, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 30 }],
+    noPanRate: 30,
+    notes: ['TDS at 30% on entire winning amount.'],
+  },
+  {
+    id: 'insurance_comm_194D', section: '194D', label: 'Insurance Commission', category: 'Insurance',
+    desc: 'Commission or remuneration paid to insurance agents or surveyors',
+    isSalary: false, threshold: 15_000, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 5 }],
+    noPanRate: 20,
+    notes: ['Threshold ₹15,000 per financial year.'],
+  },
+  {
+    id: 'life_insurance_194DA', section: '194DA', label: 'Life Insurance Policy Maturity', category: 'Insurance',
+    desc: 'Sum received under a life insurance policy (including bonus) on maturity',
+    isSalary: false, threshold: 1_00_000, hasPayeeType: false,
+    rates: [{ label: 'Rate on income portion', rate: 2 }],
+    noPanRate: 20,
+    notes: ['TDS at 2% only on the income component (proceeds minus premiums paid).', 'Threshold ₹1,00,000 total proceeds per year.'],
+  },
+  {
+    id: 'lottery_comm_194G', section: '194G', label: 'Commission on Lottery Tickets', category: 'Winnings',
+    desc: 'Commission, remuneration or prize paid to lottery ticket sellers / stocking agents',
+    isSalary: false, threshold: 15_000, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 5 }],
+    noPanRate: 20,
+    notes: ['Threshold ₹15,000 per financial year.', 'Different from 194B (winnings) — this is for agents selling tickets.'],
+  },
+  {
+    id: 'rent_individual_194IB', section: '194IB', label: 'Rent by Individual / HUF (non-audit)', category: 'Rent',
+    desc: 'Rent paid by individual or HUF not subject to tax audit',
+    isSalary: false, threshold: 50_000, thresholdNote: '₹50,000 per month', hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 5 }],
+    noPanRate: 20,
+    notes: ['For individuals/HUF not liable to tax audit under 44AB.', 'TDS triggered when monthly rent exceeds ₹50,000.', 'Deducted once at year-end or tenancy end.'],
+  },
+  {
+    id: 'jda_194IC', section: '194IC', label: 'Joint Development Agreement', category: 'Property',
+    desc: 'Payment in cash or kind under joint development agreement for land / building',
+    isSalary: false, threshold: null, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 10 }],
+    noPanRate: 20,
+    notes: ['No threshold — TDS on all payments made under JDA.'],
+  },
+  {
+    id: 'payment_indiv_194M', section: '194M', label: 'Payment by Individual / HUF (contract / professional)', category: 'Business Payments',
+    desc: 'Payments for contractor, professional fees, commission by individual/HUF not liable to audit',
+    isSalary: false, threshold: 50_00_000, thresholdNote: '₹50,00,000 aggregate in a year', hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 5 }],
+    noPanRate: 20,
+    notes: ['Applies when individual/HUF is not liable to deduct under 194C/194H/194J (not subject to audit).', 'Threshold ₹50 lakh aggregate per year.'],
+  },
+  {
+    id: 'cash_withdrawal_194N', section: '194N', label: 'Cash Withdrawal (Bank)', category: 'Banking & Finance',
+    desc: 'Cash withdrawal from bank, cooperative bank or post office above threshold',
+    isSalary: false, threshold: 1_00_00_000, thresholdNote: '₹1,00,00,000 (₹1 Cr) for regular filers; ₹20,00,000 for non-ITR filers', hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 2 }],
+    noPanRate: 20,
+    notes: ['2% on amount exceeding ₹1 Cr for regular ITR filers.', 'Non-ITR filers: 2% above ₹20L, 5% on amount above ₹1 Cr.'],
+  },
+  {
+    id: 'ecommerce_194O', section: '194O', label: 'E-commerce Payments', category: 'Business Payments',
+    desc: 'Payment by e-commerce operator to participant (seller/service provider on platform)',
+    isSalary: false, threshold: 5_00_000, thresholdNote: '₹5,00,000 aggregate sales per participant per year', hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 0.1 }],
+    noPanRate: 5,
+    notes: ['0.1% on gross amount credited/paid to e-commerce participant.', 'No PAN: 5% rate applies.'],
+  },
+  {
+    id: 'goods_purchase_194Q', section: '194Q', label: 'Purchase of Goods', category: 'Business Payments',
+    desc: 'TDS by buyer on purchase of goods from resident seller above ₹50 lakh',
+    isSalary: false, threshold: 50_00_000, thresholdNote: '₹50,00,000 aggregate per seller per year', hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 0.1 }],
+    noPanRate: 5,
+    notes: ['Applies to buyers with turnover > ₹10 Cr in previous year.', 'Not applicable if seller is already liable for TCS under 206C.', 'No PAN: 5% rate applies.'],
+  },
+  {
+    id: 'benefit_194R', section: '194R', label: 'Benefits / Perquisites', category: 'Business Payments',
+    desc: 'Benefits or perquisites (cash or kind) given in course of business or profession',
+    isSalary: false, threshold: 20_000, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 10 }],
+    noPanRate: 20,
+    notes: ['Threshold ₹20,000 aggregate per recipient per year.', 'Covers gifts, samples, hospitality to doctors, influencers, distributors etc.'],
+  },
+  {
+    id: 'vda_194S', section: '194S', label: 'VDA / Crypto (Digital Assets)', category: 'Digital Assets',
+    desc: 'TDS on payment for transfer of Virtual Digital Asset (crypto, NFT etc.)',
+    isSalary: false, threshold: 50_000, thresholdNote: '₹50,000/year; ₹10,000 for specified persons', hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 1 }],
+    noPanRate: 20,
+    notes: ['Buyer deducts 1% on consideration paid for VDA.', 'Specified persons (individual/HUF not in business): ₹10,000 threshold.'],
+  },
+  {
+    id: 'partner_payment_194T', section: '194T', label: 'Payment to Partners of Firm', category: 'Business Payments',
+    desc: 'Salary, remuneration, commission, bonus or interest paid to partners of a firm',
+    isSalary: false, threshold: 20_000, hasPayeeType: false,
+    rates: [{ label: 'Standard rate', rate: 10 }],
+    noPanRate: 20,
+    notes: ['Applicable from FY 2024-25.', 'Threshold ₹20,000 aggregate per partner per year.'],
+  },
 ]
 
 // ── Due date helpers ───────────────────────────────────────────────────────
@@ -185,6 +312,201 @@ function countMonthsOrPart(from: Date, to: Date): number {
 export const fmtDate = (d: Date) =>
   d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 
+// ── Income Tax on Salary — Section 192 ────────────────────────────────────
+
+export type AgeCategory = 'below_60' | 'senior_60_79' | 'super_senior_80'
+export type ITaxRegime  = 'new' | 'old'
+
+interface Slab { from: number; to: number; rate: number }
+
+const SLABS: Record<string, Slab[]> = {
+  new: [
+    { from: 0,           to: 400_000,   rate: 0  },
+    { from: 400_000,     to: 800_000,   rate: 5  },
+    { from: 800_000,     to: 1_200_000, rate: 10 },
+    { from: 1_200_000,   to: 1_600_000, rate: 15 },
+    { from: 1_600_000,   to: 2_000_000, rate: 20 },
+    { from: 2_000_000,   to: 2_400_000, rate: 25 },
+    { from: 2_400_000,   to: Infinity,  rate: 30 },
+  ],
+  old_below_60: [
+    { from: 0,           to: 250_000,   rate: 0  },
+    { from: 250_000,     to: 500_000,   rate: 5  },
+    { from: 500_000,     to: 1_000_000, rate: 20 },
+    { from: 1_000_000,   to: Infinity,  rate: 30 },
+  ],
+  old_senior: [
+    { from: 0,           to: 300_000,   rate: 0  },
+    { from: 300_000,     to: 500_000,   rate: 5  },
+    { from: 500_000,     to: 1_000_000, rate: 20 },
+    { from: 1_000_000,   to: Infinity,  rate: 30 },
+  ],
+  old_super_senior: [
+    { from: 0,           to: 500_000,   rate: 0  },
+    { from: 500_000,     to: 1_000_000, rate: 20 },
+    { from: 1_000_000,   to: Infinity,  rate: 30 },
+  ],
+}
+
+function slabKey(regime: ITaxRegime, age: AgeCategory): string {
+  if (regime === 'new') return 'new'
+  if (age === 'senior_60_79')   return 'old_senior'
+  if (age === 'super_senior_80') return 'old_super_senior'
+  return 'old_below_60'
+}
+
+function calcSlabTax(income: number, slabs: Slab[]): number {
+  let tax = 0
+  for (const s of slabs) {
+    if (income <= s.from) break
+    const taxable = Math.min(income, s.to) - s.from
+    tax += (taxable * s.rate) / 100
+  }
+  return Math.round(tax)
+}
+
+type Rebate87AConfig = { new: { max_rebate: number; income_threshold: number }; old: { max_rebate: number; income_threshold: number } }
+
+function calcRebate87AWithConfig(slabTax: number, taxableIncome: number, regime: ITaxRegime, cfg?: Rebate87AConfig): number {
+  if (regime === 'new') {
+    const threshold  = cfg?.new.income_threshold ?? 1_200_000
+    const maxRebate  = cfg?.new.max_rebate       ?? 60_000
+    return taxableIncome <= threshold ? Math.min(slabTax, maxRebate) : 0
+  }
+  const threshold = cfg?.old.income_threshold ?? 500_000
+  const maxRebate = cfg?.old.max_rebate       ?? 12_500
+  return taxableIncome <= threshold ? Math.min(slabTax, maxRebate) : 0
+}
+
+type SurchargeConfig = { new_regime: { income_exceeds: number; income_upto: number | null; surcharge_pct: number }[]; old_regime: { income_exceeds: number; income_upto: number | null; surcharge_pct: number }[] }
+
+// Surcharge with marginal relief — for individual / HUF / salaried employees
+function calcSurchargeWithConfig(
+  taxAfterRebate: number,
+  taxableIncome: number,
+  regime: ITaxRegime,
+  slabs: Slab[],
+  surCfg?: SurchargeConfig,
+): number {
+  // Build tiers from DB config if available, else use hardcoded
+  let TIERS: { above: number; pct: number; prevPct: number }[]
+
+  if (surCfg) {
+    const brackets = regime === 'new' ? surCfg.new_regime : surCfg.old_regime
+    TIERS = brackets
+      .filter(b => b.surcharge_pct > 0)
+      .map((b, i, arr) => ({
+        above:   b.income_exceeds,
+        pct:     b.surcharge_pct,
+        prevPct: i > 0 ? arr[i - 1].surcharge_pct : 0,
+      }))
+  } else {
+    TIERS = [
+      { above: 5_000_000,  pct: 10, prevPct: 0  },
+      { above: 10_000_000, pct: 15, prevPct: 10 },
+      { above: 20_000_000, pct: 25, prevPct: 15 },
+      { above: 50_000_000, pct: regime === 'new' ? 25 : 37, prevPct: 25 },
+    ]
+  }
+
+  let activeTier: (typeof TIERS)[0] | null = null
+  for (const t of TIERS) if (taxableIncome > t.above) activeTier = t
+  if (!activeTier) return 0
+
+  const rawSurcharge = Math.round((taxAfterRebate * activeTier.pct) / 100)
+
+  // Marginal relief: (tax + surcharge) ≤ (total at threshold) + (income − threshold)
+  const threshold = activeTier.above
+  const taxAtThr  = calcSlabTax(threshold, slabs)
+  const rebateThr = calcRebate87AWithConfig(taxAtThr, threshold, regime)
+  const tAfterThr = Math.max(0, taxAtThr - rebateThr)
+  const sThr      = Math.round((tAfterThr * activeTier.prevPct) / 100)
+  const totalAtThr = tAfterThr + sThr
+
+  const maxTotal = totalAtThr + (taxableIncome - threshold)
+  const relief   = Math.max(0, (taxAfterRebate + rawSurcharge) - maxTotal)
+
+  return Math.max(0, rawSurcharge - relief)
+}
+
+export interface SalaryTaxInput {
+  regime:          ITaxRegime
+  ageCategory:     AgeCategory
+  grossSalary:     number
+  otherIncome:     number   // any other annual income
+  hraExemption:    number   // old regime: HRA exempt amount
+  ltaExemption:    number   // old regime: LTA exempt amount
+  otherExemptions: number   // old regime: other allowance exemptions
+  d80C:            number   // old regime, max 1,50,000
+  d80D:            number   // old regime
+  d80CCD1B:        number   // both regimes, max 50,000
+  d80CCD2:         number   // both regimes: employer NPS contribution (14% new / 10% old)
+  dOther:          number   // old regime: other Chapter VI-A deductions
+}
+
+export interface SalaryTaxResult {
+  grossSalary:      number
+  stdDeduction:     number
+  totalExemptions:  number
+  totalDeductions:  number
+  taxableIncome:    number
+  slabTax:          number
+  rebate87A:        number
+  taxAfterRebate:   number
+  surcharge:        number
+  cess:             number
+  annualTax:        number
+  monthlyTDS:       number
+  effectiveRate:    number
+}
+
+export interface IncomeTaxOverride {
+  slabs?:        Record<string, Slab[]>
+  stdDeduction?: { new: number; old: number }
+  rebate87A?:    { new: { max_rebate: number; income_threshold: number }; old: { max_rebate: number; income_threshold: number } }
+  surcharge?:    { new_regime: { income_exceeds: number; income_upto: number | null; surcharge_pct: number }[]; old_regime: { income_exceeds: number; income_upto: number | null; surcharge_pct: number }[] }
+}
+
+export function computeSalaryTax(input: SalaryTaxInput, override?: IncomeTaxOverride): SalaryTaxResult {
+  const { regime, ageCategory, grossSalary, otherIncome } = input
+  const stdDedConfig = override?.stdDeduction ?? { new: 75_000, old: 50_000 }
+  const stdDeduction = regime === 'new' ? stdDedConfig.new : stdDedConfig.old
+
+  // Old regime: HRA + LTA + other exemptions (capped at gross salary)
+  const totalExemptions = regime === 'old'
+    ? Math.min(grossSalary - stdDeduction, input.hraExemption + input.ltaExemption + input.otherExemptions)
+    : 0
+
+  const salaryAfterDeductions = Math.max(0, grossSalary - stdDeduction - totalExemptions)
+  const grossTotal = salaryAfterDeductions + Math.max(0, otherIncome)
+
+  // Chapter VI-A deductions
+  const d80C_capped     = Math.min(input.d80C, 150_000)
+  const d80CCD1B_capped = Math.min(input.d80CCD1B, 50_000)
+  let totalDeductions = d80CCD1B_capped + Math.max(0, input.d80CCD2)
+  if (regime === 'old') totalDeductions += d80C_capped + Math.max(0, input.d80D) + Math.max(0, input.dOther)
+  totalDeductions = Math.min(totalDeductions, grossTotal)
+
+  const taxableIncome = Math.max(0, grossTotal - totalDeductions)
+
+  const slabsMap      = override?.slabs ?? SLABS
+  const slabs         = slabsMap[slabKey(regime, ageCategory)] ?? SLABS[slabKey(regime, ageCategory)]
+  const slabTax       = calcSlabTax(taxableIncome, slabs)
+  const rebate87A     = calcRebate87AWithConfig(slabTax, taxableIncome, regime, override?.rebate87A)
+  const taxAfterRebate = Math.max(0, slabTax - rebate87A)
+  const surcharge     = calcSurchargeWithConfig(taxAfterRebate, taxableIncome, regime, slabs, override?.surcharge)
+  const cess          = Math.round((taxAfterRebate + surcharge) * 0.04)
+  const annualTax     = taxAfterRebate + surcharge + cess
+  const monthlyTDS    = Math.round(annualTax / 12)
+  const effectiveRate = grossSalary > 0 ? Math.round((annualTax / grossSalary) * 10000) / 100 : 0
+
+  return {
+    grossSalary, stdDeduction, totalExemptions, totalDeductions,
+    taxableIncome, slabTax, rebate87A, taxAfterRebate,
+    surcharge, cess, annualTax, monthlyTDS, effectiveRate,
+  }
+}
+
 // ── Core TDS compute ───────────────────────────────────────────────────────
 
 export interface TDSInput {
@@ -204,10 +526,12 @@ export interface TDSResult {
   noPanRate:        number
   tdsAmountNoPan:   number
   netToPayee:       number
+  salaryTax?:       SalaryTaxResult  // only present for salary_192 entries
 }
 
-export function computeTDS(input: TDSInput): TDSResult | null {
-  const section = TDS_SECTIONS.find(s => s.id === input.sectionId)
+export function computeTDS(input: TDSInput, sectionsOverride?: TDSSectionMeta[]): TDSResult | null {
+  const sections = sectionsOverride ?? TDS_SECTIONS
+  const section = sections.find(s => s.id === input.sectionId)
   if (!section || section.isSalary) return null
 
   const amount = Math.max(0, input.amount)

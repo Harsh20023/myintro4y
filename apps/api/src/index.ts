@@ -10,6 +10,8 @@ import configRoutes from './routes/config'
 import gstRoutes from './routes/gst'
 import gstReturnsRoutes from './routes/gst-returns'
 import tdsRoutes from './routes/tds'
+import taxMetaRoutes from './routes/taxMeta'
+import taxConfigRoutes from './routes/taxConfig'
 import ruleSetsRoutes, { calculate } from './routes/ruleSets'
 
 const app = express()
@@ -43,6 +45,8 @@ app.use('/config', configRoutes)
 app.use('/gst',         gstRoutes)
 app.use('/gst/returns', gstReturnsRoutes)
 app.use('/tds',        tdsRoutes)
+app.use('/tax-meta',   taxMetaRoutes)
+app.use('/tax-config', taxConfigRoutes)
 app.use('/rule-sets',  ruleSetsRoutes)
 app.post('/calculate', calculate)
 

@@ -34,7 +34,7 @@ const THEME_VARS: Record<Theme, Record<string, string>> = {
 };
 
 type ThemeCtx = { theme: Theme; setTheme: (t: Theme) => void };
-const ThemeContext = createContext<ThemeCtx>({ theme: 'royal', setTheme: () => {} });
+const ThemeContext = createContext<ThemeCtx>({ theme: 'midnight', setTheme: () => {} });
 
 export function useTheme() { return useContext(ThemeContext); }
 
@@ -46,11 +46,11 @@ function applyTheme(theme: Theme) {
 }
 
 export default function ThemeWrapper({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('royal');
+  const [theme, setTheme] = useState<Theme>('midnight');
 
   useEffect(() => {
     const saved = localStorage.getItem('ca-theme') as Theme | null;
-    const initial = saved && saved in THEME_VARS ? saved : 'royal';
+    const initial = saved && saved in THEME_VARS ? saved : 'midnight';
     applyTheme(initial);
     setTheme(initial);
   }, []);

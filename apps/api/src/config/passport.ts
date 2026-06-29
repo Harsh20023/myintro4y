@@ -31,13 +31,14 @@ export function initPassport() {
               user.isVerified  = true
               await user.save()
             } else {
-              // Brand new user via Google
+              // Brand new user via Google — always individual
               user = await User.create({
                 email,
                 googleId:    profile.id,
                 displayName,
                 avatarUrl,
                 isVerified:  true,
+                accountType: 'individual',
               })
             }
           }

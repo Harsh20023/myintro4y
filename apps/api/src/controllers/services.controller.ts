@@ -18,8 +18,9 @@ export const ServicesController = {
         services: services.filter(s => s.categoryId.toString() === cat._id.toString()),
       }))
       return res.json(result)
-    } catch {
-      return res.status(500).json({ message: 'Server error' })
+    } catch (err) {
+      console.error('[getCategories]', err)
+      return res.status(500).json({ message: 'Server error', detail: (err as Error).message })
     }
   },
 

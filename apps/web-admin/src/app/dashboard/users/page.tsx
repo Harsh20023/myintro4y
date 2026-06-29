@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 import {
   usersApi, membershipsApi,
   UserRecord, MembershipRecord, AccountType, CreateUserPayload,
@@ -10,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, RefreshCw,
   CheckCircle, XCircle, Plus, X, Link2, Trash2,
   Copy, Check, Eye, EyeOff,
+  GitFork,
 } from 'lucide-react'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -528,6 +530,10 @@ export default function UsersPage() {
             className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
           </button>
+          <Link href="/dashboard/users/tree"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+            <GitFork size={14} /> User tree
+          </Link>
           <button onClick={() => setShowCreate(true)}
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition">
             <Plus size={15} /> Create user

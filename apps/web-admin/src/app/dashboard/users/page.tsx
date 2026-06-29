@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   usersApi, membershipsApi,
   UserRecord, MembershipRecord, AccountType, CreateUserPayload,
@@ -481,6 +482,8 @@ function DetailPanel({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function UsersPage() {
+  const searchParams = useSearchParams()
+
   const [users, setUsers]       = useState<UserRecord[]>([])
   const [total, setTotal]       = useState(0)
   const [pages, setPages]       = useState(1)
@@ -490,7 +493,10 @@ export default function UsersPage() {
 
   const [search, setSearch]             = useState('')
   const [debouncedSearch, setDbSearch]  = useState('')
-  const [typeFilter, setTypeFilter]     = useState<AccountType | ''>('')
+  const [typeFilter, setTypeFilter]     = useState<AccountType | ''>(() => {
+    const t = searchParams?.get('accountType') ?? ''
+    return (['individual', 'professional', 'organization'].includes(t) ? t : '') as AccountType | ''
+  })
 
   const [showCreate, setShowCreate] = useState(false)
   const [selected, setSelected]     = useState<UserRecord | null>(null)

@@ -98,6 +98,12 @@ export const usersApi = {
       body: JSON.stringify(payload),
       headers: authHeaders(),
     }),
+
+  stats: () =>
+    req<{ total: number; individual: number; professional: number; organization: number }>(
+      '/users/stats',
+      { headers: authHeaders() },
+    ),
 }
 
 export const membershipsApi = {

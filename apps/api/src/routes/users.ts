@@ -92,4 +92,19 @@ router.post('/', ...guard, async (req: AuthRequest, res: Response) => {
   }
 })
 
+// ── Stats (lightweight) ───────────────────────────────────────────────────────
+router.get('/stats', ...guard, async (_req: AuthRequest, res: Response) => {
+  try {
+    const [total, individual, professional, organization] = await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ accountType: 'individual' }),
+      User.countDocuments({ accountType: 'professional' }),
+      User.countDocuments({ accountType: 'organization' }),
+    ])
+    res.json({ total, individual, professional, organization })
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message })
+  }
+})
+
 export default router

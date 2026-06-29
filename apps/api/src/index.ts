@@ -14,12 +14,14 @@ import taxMetaRoutes from './routes/taxMeta'
 import taxConfigRoutes from './routes/taxConfig'
 import ruleSetsRoutes, { calculate } from './routes/ruleSets'
 import servicesRoutes from './routes/services'
+import usersRoutes from './routes/users'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
 const allowedOrigins = [
   process.env.FRONTEND_URL ?? 'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:4550',
 ]
 
 app.use(cors({
@@ -51,6 +53,7 @@ app.use('/tax-config', taxConfigRoutes)
 app.use('/rule-sets',  ruleSetsRoutes)
 app.post('/calculate', calculate)
 app.use('/services', servicesRoutes)
+app.use('/users',    usersRoutes)
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`))

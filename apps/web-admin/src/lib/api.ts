@@ -15,10 +15,30 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+export type AccountType = 'individual' | 'professional' | 'organization'
+
 export interface AdminUser {
   id: string
   email: string
   role: 'user' | 'superadmin'
+}
+
+export interface UserRecord {
+  _id: string
+  email: string
+  displayName?: string
+  role: 'user' | 'superadmin'
+  accountType: AccountType
+  firmName?: string
+  membershipNumber?: string
+  orgName?: string
+  pan?: string
+  gstin?: string
+  phone?: string
+  isVerified: boolean
+  has_hrms_account: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -32,6 +52,23 @@ export const auth = {
 
   me: () =>
     req<{ user: AdminUser }>('/auth/me', { headers: authHeaders() }),
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+export const usersApi = {
+  list: (params?: { page?: number; limit?: number; accountType?: string; search?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.page)        qs.set('page',        String(params.page))
+    if (params?.limit)       qs.set('limit',       String(params.limit))
+    if (params?.accountType) qs.set('accountType', params.accountType)
+    if (params?.search)      qs.set('search',      params.search)
+    const q = qs.toString()
+    return req<{ users: UserRecord[]; total: number; page: number; limit: number; pages: number }>(
+      `/users${q ? `?${q}` : ''}`,
+      { headers: authHeaders() },
+    )
+  },
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────

@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { auth } from '@/lib/api'
-import { LayoutDashboard, Globe, FileText, Receipt, LogOut, ChevronDown, Layers } from 'lucide-react'
+import { LayoutDashboard, Globe, FileText, Receipt, LogOut, ChevronDown, Layers, Users } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard',             label: 'Overview',      icon: LayoutDashboard, exact: true },
+  { href: '/dashboard/users',       label: 'Users',         icon: Users },
   { href: '/dashboard/public-access', label: 'Public Access', icon: Globe },
-  { href: '/dashboard/services', label: 'Services', icon: Layers },
+  { href: '/dashboard/services',    label: 'Services',      icon: Layers },
 ]
 
 const tdsItems = [

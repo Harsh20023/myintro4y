@@ -44,8 +44,8 @@ const FLOATING_CARDS = [
 
 interface Props {
   children: React.ReactNode
-  heading: string
-  subheading: string
+  heading?: string
+  subheading?: string
 }
 
 export function AuthShell({ children, heading, subheading }: Props) {
@@ -149,11 +149,13 @@ export function AuthShell({ children, heading, subheading }: Props) {
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="w-full max-w-[400px] animate-scale-in" style={{ opacity: 0 }}>
 
-            {/* Heading */}
-            <div className="mb-8 animate-slide-up" style={{ opacity: 0, animationDelay: '0.05s' }}>
-              <h1 className="font-display font-bold text-3xl text-ink-950 mb-1.5">{heading}</h1>
-              <p className="text-ink-400 text-sm">{subheading}</p>
-            </div>
+            {/* Heading — only rendered when provided */}
+            {heading && (
+              <div className="mb-8 animate-slide-up" style={{ opacity: 0, animationDelay: '0.05s' }}>
+                <h1 className="font-display font-bold text-3xl text-ink-950 mb-1.5">{heading}</h1>
+                {subheading && <p className="text-ink-400 text-sm">{subheading}</p>}
+              </div>
+            )}
 
             {children}
           </div>

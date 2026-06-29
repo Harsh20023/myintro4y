@@ -318,6 +318,137 @@ export const taxMetaApi = {
     }),
 }
 
+// ── Services CMS ─────────────────────────────────────────────────────────────
+
+export interface ServiceCategory {
+  _id: string
+  name: string
+  slug: string
+  icon?: string
+  displayOrder: number
+  isVisible: boolean
+}
+
+export interface Service {
+  _id: string
+  categoryId: string
+  name: string
+  slug: string
+  shortDescription?: string
+  icon?: string
+  displayOrder: number
+  isActive: boolean
+  metaTitle?: string
+  metaDescription?: string
+}
+
+export type SectionType = 'STEPS' | 'BENEFITS' | 'DOCUMENTS_REQUIRED' | 'FAQ' | 'PRICING' | 'WHY_US' | 'COMPARISON_TABLE' | 'CUSTOM'
+export type BlockType   = 'STEP' | 'LIST_ITEM' | 'FAQ_ITEM' | 'PRICING_CARD' | 'TABLE_ROW' | 'TEXT'
+
+export interface PageBlock {
+  _id: string
+  type: BlockType
+  title?: string
+  body?: string
+  icon?: string
+  displayOrder: number
+}
+
+export interface PageSection {
+  _id: string
+  type: SectionType
+  heading: string
+  displayOrder: number
+  isVisible: boolean
+  blocks: PageBlock[]
+}
+
+export interface ServicePageData {
+  _id: string
+  serviceId: string
+  heroTitle?: string
+  heroSubtitle?: string
+  heroCTAText?: string
+  overviewText?: string
+  eligibilityText?: string
+  sections: PageSection[]
+}
+
+export type CategoryWithServices = ServiceCategory & { services: Service[] }
+
+export const servicesApi = {
+  getCategories: () =>
+    req<CategoryWithServices[]>('/services/categories'),
+
+  getServiceBySlug: (slug: string) =>
+    req<{ service: Service; page: ServicePageData | null }>(`/services/${slug}`),
+
+  createCategory: (body: Omit<ServiceCategory, '_id'>) =>
+    req<ServiceCategory>('/services/categories', {
+      method: 'POST', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  updateCategory: (categoryId: string, body: Partial<Omit<ServiceCategory, '_id'>>) =>
+    req<ServiceCategory>(`/services/categories/${categoryId}`, {
+      method: 'PATCH', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  deleteCategory: (categoryId: string) =>
+    req<{ message: string }>(`/services/categories/${categoryId}`, {
+      method: 'DELETE', headers: authHeaders(),
+    }),
+
+  createService: (body: Omit<Service, '_id'>) =>
+    req<Service>('/services', {
+      method: 'POST', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  updateService: (serviceId: string, body: Partial<Omit<Service, '_id'>>) =>
+    req<Service>(`/services/${serviceId}`, {
+      method: 'PATCH', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  deleteService: (serviceId: string) =>
+    req<{ message: string }>(`/services/${serviceId}`, {
+      method: 'DELETE', headers: authHeaders(),
+    }),
+
+  upsertPage: (serviceId: string, body: Partial<Pick<ServicePageData, 'heroTitle' | 'heroSubtitle' | 'heroCTAText' | 'overviewText' | 'eligibilityText'>>) =>
+    req<ServicePageData>(`/services/${serviceId}/page`, {
+      method: 'PUT', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  addSection: (serviceId: string, body: { type: SectionType; heading: string; displayOrder?: number; isVisible?: boolean }) =>
+    req<ServicePageData>(`/services/${serviceId}/page/sections`, {
+      method: 'POST', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  updateSection: (serviceId: string, sectionId: string, body: Partial<Pick<PageSection, 'type' | 'heading' | 'displayOrder' | 'isVisible'>>) =>
+    req<ServicePageData>(`/services/${serviceId}/page/sections/${sectionId}`, {
+      method: 'PATCH', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  deleteSection: (serviceId: string, sectionId: string) =>
+    req<ServicePageData>(`/services/${serviceId}/page/sections/${sectionId}`, {
+      method: 'DELETE', headers: authHeaders(),
+    }),
+
+  addBlock: (serviceId: string, sectionId: string, body: Omit<PageBlock, '_id'>) =>
+    req<ServicePageData>(`/services/${serviceId}/page/sections/${sectionId}/blocks`, {
+      method: 'POST', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  updateBlock: (serviceId: string, sectionId: string, blockId: string, body: Partial<Omit<PageBlock, '_id'>>) =>
+    req<ServicePageData>(`/services/${serviceId}/page/sections/${sectionId}/blocks/${blockId}`, {
+      method: 'PATCH', body: JSON.stringify(body), headers: authHeaders(),
+    }),
+
+  deleteBlock: (serviceId: string, sectionId: string, blockId: string) =>
+    req<ServicePageData>(`/services/${serviceId}/page/sections/${sectionId}/blocks/${blockId}`, {
+      method: 'DELETE', headers: authHeaders(),
+    }),
+}
+
 // ── Tax Config ────────────────────────────────────────────────────────────────
 
 export interface TaxConfigStatus {

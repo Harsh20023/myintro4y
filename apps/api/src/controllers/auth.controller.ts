@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
-import { AuthService } from '../services/auth.service'
+import { AuthService, RegisterPayload } from '../services/auth.service'
 import { AuthRequest } from '../middleware/authenticate'
+
+const VALID_ACCOUNT_TYPES = ['individual', 'professional', 'organization'] as const
 
 function handleError(res: Response, err: unknown) {
   const e      = err as Error & { status?: number }
@@ -11,10 +13,15 @@ function handleError(res: Response, err: unknown) {
 export const AuthController = {
   async register(req: Request, res: Response) {
     try {
-      const { email, password } = req.body as { email: string; password: string }
-      if (!email || !password) return res.status(400).json({ message: 'Email and password required' })
+      const body = req.body as Partial<RegisterPayload>
+      const { email, password, accountType } = body
 
-      const result = await AuthService.register(email, password)
+      if (!email || !password) return res.status(400).json({ message: 'Email and password required' })
+      if (!accountType || !(VALID_ACCOUNT_TYPES as readonly string[]).includes(accountType)) {
+        return res.status(400).json({ message: 'accountType must be individual, professional, or organization' })
+      }
+
+      const result = await AuthService.register(body as RegisterPayload)
       return res.status(201).json({
         message: 'Registration successful. Use OTP 123456 to verify.',
         ...result,

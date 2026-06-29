@@ -13,6 +13,7 @@ import tdsRoutes from './routes/tds'
 import taxMetaRoutes from './routes/taxMeta'
 import taxConfigRoutes from './routes/taxConfig'
 import ruleSetsRoutes, { calculate } from './routes/ruleSets'
+import servicesRoutes from './routes/services'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
@@ -49,6 +50,7 @@ app.use('/tax-meta',   taxMetaRoutes)
 app.use('/tax-config', taxConfigRoutes)
 app.use('/rule-sets',  ruleSetsRoutes)
 app.post('/calculate', calculate)
+app.use('/services', servicesRoutes)
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`))

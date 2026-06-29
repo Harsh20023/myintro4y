@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt, { SignOptions } from 'jsonwebtoken'
-import { User } from '../models/User'
+import { User, AccountType } from '../models/User'
 
 const STATIC_OTP = '123456'
 
@@ -12,15 +12,36 @@ function signToken(id: string, role: string): string {
   )
 }
 
+export interface RegisterPayload {
+  email: string
+  password: string
+  accountType: AccountType
+  displayName?: string
+  // professional
+  firmName?: string
+  membershipNumber?: string
+  // organization
+  orgName?: string
+  pan?: string
+  gstin?: string
+  // shared
+  phone?: string
+}
+
 export const AuthService = {
-  async register(email: string, password: string) {
+  async register(payload: RegisterPayload) {
+    const { email, password, accountType, ...extra } = payload
     const existing = await User.findOne({ email })
     if (existing) throw Object.assign(new Error('Email already registered'), { status: 409 })
+
+    if (accountType === 'organization' && !extra.orgName) {
+      throw Object.assign(new Error('Organisation name is required'), { status: 400 })
+    }
 
     const passwordHash = await bcrypt.hash(password, 10)
     const otpExpiry    = new Date(Date.now() + 10 * 60 * 1000)
 
-    const user = await User.create({ email, passwordHash, otp: STATIC_OTP, otpExpiry })
+    const user = await User.create({ email, passwordHash, accountType, otp: STATIC_OTP, otpExpiry, ...extra })
     return { userId: user._id }
   },
 
@@ -54,7 +75,9 @@ export const AuthService = {
       user: {
         id:               user._id,
         email:            user.email,
+        displayName:      user.displayName,
         role:             user.role,
+        accountType:      user.accountType,
         has_hrms_account: user.has_hrms_account,
       },
     }

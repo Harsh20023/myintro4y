@@ -15,9 +15,24 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+export type AccountType = 'individual' | 'professional' | 'organization'
+
+export interface RegisterPayload {
+  email: string
+  password: string
+  accountType: AccountType
+  displayName?: string
+  firmName?: string
+  membershipNumber?: string
+  orgName?: string
+  pan?: string
+  gstin?: string
+  phone?: string
+}
+
 export const api = {
-  register: (email: string, password: string) =>
-    req('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  register: (payload: RegisterPayload) =>
+    req('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
 
   verifyOtp: (email: string, otp: string) =>
     req<{ token: string }>('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ email, otp }) }),
@@ -42,7 +57,9 @@ export const api = {
 export interface AuthUser {
   id: string
   email: string
+  displayName?: string
   role: 'user' | 'superadmin'
+  accountType: AccountType
   has_hrms_account: boolean
 }
 

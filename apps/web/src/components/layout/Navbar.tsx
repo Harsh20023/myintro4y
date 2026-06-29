@@ -53,7 +53,7 @@ const incomeTaxSections = [
 ]
 
 export function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileOpen, setMobileOpen]     = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { user, requireLogin, setRequireLogin, logout, loading } = useAuth()
@@ -62,7 +62,6 @@ export function Navbar() {
     try { await setRequireLogin(!requireLogin) } catch { /* swallow */ }
   }
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -96,7 +95,6 @@ export function Navbar() {
 
             {dropdownOpen && (
               <div className="absolute top-full left-0 mt-1.5 bg-white rounded-2xl shadow-lg border border-ink-100 py-2 z-50 flex">
-                {/* GST Tools column */}
                 <div className="min-w-[200px]">
                   <p className="px-4 pt-1 pb-1 text-xs font-semibold uppercase tracking-wider text-ink-400">GST Tools</p>
                   {gstTools.map(t => (
@@ -108,7 +106,6 @@ export function Navbar() {
                   ))}
                 </div>
                 <div className="w-px bg-ink-100 my-2" />
-                {/* Income Tax Tools column */}
                 <div className="min-w-[220px] py-1">
                   <p className="px-4 pt-1 pb-1 text-xs font-semibold uppercase tracking-wider text-ink-400">Income Tax Tools</p>
                   {incomeTaxSections.map(section => (
@@ -154,7 +151,6 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile toggle */}
         <button
           className="md:hidden p-2 rounded-lg hover:bg-ink-100 transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -164,7 +160,6 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-ink-100 bg-ink-50 px-4 py-3 flex flex-col gap-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 px-3 pt-1 pb-0.5">GST Tools</p>

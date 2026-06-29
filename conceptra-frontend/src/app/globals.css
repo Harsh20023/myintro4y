@@ -57,3 +57,14 @@ body {
 .dropdown-panel {
   animation: dropdown-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.service-card {
+  background: white;
+  border: 1px solid var(--ca-border);
+  border-radius: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.service-card:hover {
+  border-color: var(--ca-primary);
+  box-shadow: 0 4px 20px rgba(16, 64, 160, 0.10);
+}

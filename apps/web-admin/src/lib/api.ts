@@ -56,6 +56,28 @@ export const auth = {
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
+export interface CreateUserPayload {
+  email: string
+  accountType: AccountType
+  displayName?: string
+  firmName?: string
+  membershipNumber?: string
+  orgName?: string
+  pan?: string
+  gstin?: string
+  phone?: string
+}
+
+export interface MembershipRecord {
+  _id: string
+  memberId: UserRecord
+  memberType: 'individual' | 'organization'
+  targetId:  UserRecord
+  targetType: 'organization' | 'professional'
+  assignedBy: string
+  createdAt: string
+}
+
 export const usersApi = {
   list: (params?: { page?: number; limit?: number; accountType?: string; search?: string }) => {
     const qs = new URLSearchParams()
@@ -69,6 +91,36 @@ export const usersApi = {
       { headers: authHeaders() },
     )
   },
+
+  create: (payload: CreateUserPayload) =>
+    req<{ user: UserRecord; tempPassword: string }>('/users', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: authHeaders(),
+    }),
+}
+
+export const membershipsApi = {
+  list: (params?: { memberId?: string; targetId?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.memberId) qs.set('memberId', params.memberId)
+    if (params?.targetId) qs.set('targetId', params.targetId)
+    const q = qs.toString()
+    return req<MembershipRecord[]>(`/memberships${q ? `?${q}` : ''}`, { headers: authHeaders() })
+  },
+
+  create: (memberId: string, targetId: string) =>
+    req<MembershipRecord>('/memberships', {
+      method: 'POST',
+      body: JSON.stringify({ memberId, targetId }),
+      headers: authHeaders(),
+    }),
+
+  remove: (id: string) =>
+    req<{ message: string; id: string }>(`/memberships/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }),
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────

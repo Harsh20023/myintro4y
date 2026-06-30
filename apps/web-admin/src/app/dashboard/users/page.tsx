@@ -17,7 +17,7 @@ import {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const LIMIT = 20
+const PAGE_SIZE_OPTIONS = [20, 50, 100, 200]
 
 const TYPE_META: Record<AccountType, { label: string; Icon: React.ElementType; pill: string }> = {
   individual:   { label: 'Individual',   Icon: UserCircle, pill: 'bg-slate-100 text-slate-600' },
@@ -488,9 +488,11 @@ export default function UsersPage() {
   const [total, setTotal]       = useState(0)
   const [pages, setPages]       = useState(1)
   const [page, setPage]         = useState(1)
+  const [limit, setLimit]       = useState(20)
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
 
+  const [stats, setStats]               = useState<{ individual: number; professional: number; organization: number } | null>(null)
   const [search, setSearch]             = useState('')
   const [debouncedSearch, setDbSearch]  = useState('')
   const [typeFilter, setTypeFilter]     = useState<AccountType | ''>(() => {
@@ -501,6 +503,11 @@ export default function UsersPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [selected, setSelected]     = useState<UserRecord | null>(null)
 
+  // Load stats once (lightweight)
+  useEffect(() => {
+    usersApi.stats().then(setStats).catch(() => {})
+  }, [])
+
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => { setDbSearch(search); setPage(1) }, 350)
@@ -510,17 +517,13 @@ export default function UsersPage() {
   const load = useCallback(async () => {
     setLoading(true); setError('')
     try {
-      const res = await usersApi.list({ page, limit: LIMIT, accountType: typeFilter || undefined, search: debouncedSearch || undefined })
+      const res = await usersApi.list({ page, limit, accountType: typeFilter || undefined, search: debouncedSearch || undefined })
       setUsers(res.users); setTotal(res.total); setPages(res.pages)
     } catch (e) { setError(e instanceof Error ? e.message : 'Failed to load') }
     finally { setLoading(false) }
-  }, [page, typeFilter, debouncedSearch])
+  }, [page, limit, typeFilter, debouncedSearch])
 
   useEffect(() => { load() }, [load])
-
-  // Counts by type (from current page — for summary only)
-  const counts = { individual: 0, professional: 0, organization: 0 }
-  users.forEach(u => { counts[u.accountType] = (counts[u.accountType] ?? 0) + 1 })
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -559,7 +562,9 @@ export default function UsersPage() {
               <meta.Icon size={16} />
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-900 leading-none">{counts[type]}</p>
+              {stats === null
+                ? <div className="h-5 w-8 bg-gray-100 rounded animate-pulse mb-1" />
+                : <p className="text-lg font-bold text-gray-900 leading-none">{stats[type]}</p>}
               <p className="text-xs text-gray-500 mt-0.5">{meta.label}</p>
             </div>
           </button>
@@ -663,11 +668,23 @@ export default function UsersPage() {
           </tbody>
         </table>
 
-        {pages > 1 && (
+        {total > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
-            <span className="text-xs text-gray-400">
-              Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400">
+                {total === 0 ? '0' : `${(page - 1) * limit + 1}–${Math.min(page * limit, total)}`} of {total}
+              </span>
+              <div className="flex items-center gap-1">
+                {PAGE_SIZE_OPTIONS.map(n => (
+                  <button key={n} onClick={() => { setLimit(n); setPage(1) }}
+                    className={`px-2 py-0.5 rounded text-xs font-medium transition
+                      ${limit === n ? 'bg-slate-800 text-white' : 'text-gray-500 hover:bg-gray-100'}`}>
+                    {n}
+                  </button>
+                ))}
+                <span className="text-xs text-gray-400 ml-1">per page</span>
+              </div>
+            </div>
             <div className="flex items-center gap-1.5">
               <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
                 className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">

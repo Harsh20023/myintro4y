@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { auth } from '@/lib/api'
-import { LayoutDashboard, Globe, FileText, Receipt, LogOut, ChevronDown, Layers, Users } from 'lucide-react'
+import { LayoutDashboard, Globe, FileText, Receipt, LogOut, ChevronDown, Layers, Users, Settings, Hash } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard',             label: 'Overview',      icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/users',       label: 'Users',         icon: Users },
+  { href: '/dashboard',       label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard/users', label: 'Users',    icon: Users },
+  { href: '/dashboard/hsn',   label: 'HSN / SAC', icon: Hash },
+]
+
+const settingsItems = [
   { href: '/dashboard/public-access', label: 'Public Access', icon: Globe },
-  { href: '/dashboard/services',    label: 'Services',      icon: Layers },
+  { href: '/dashboard/services',      label: 'Services',      icon: Layers },
 ]
 
 const tdsItems = [
@@ -29,8 +33,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router   = useRouter()
   const pathname = usePathname()
   const [ready, setReady]         = useState(false)
-  const [tdsOpen, setTdsOpen]     = useState(pathname.includes('/tds'))
-  const [gstOpen, setGstOpen]     = useState(pathname.includes('/gst'))
+  const [settingsOpen, setSettingsOpen] = useState(pathname.includes('/public-access') || pathname.includes('/services'))
+  const [tdsOpen, setTdsOpen]           = useState(pathname.includes('/tds'))
+  const [gstOpen, setGstOpen]           = useState(pathname.includes('/gst'))
   const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
@@ -122,6 +127,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className={`flex items-center gap-2 pl-8 pr-3 py-1.5 rounded-lg text-sm transition ${
                   active ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white hover:bg-slate-800'
                 }`}>
+                {label}
+              </Link>
+            )
+          })}
+
+          {/* Settings accordion */}
+          <button
+            onClick={() => setSettingsOpen(o => !o)}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition ${
+              pathname.includes('/public-access') || pathname.includes('/services')
+                ? 'text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}>
+            <Settings size={15} />
+            <span className="flex-1 text-left">Settings</span>
+            <ChevronDown size={13} className={`transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {settingsOpen && settingsItems.map(({ href, label, icon: Icon }) => {
+            const active = pathname.startsWith(href)
+            return (
+              <Link key={href} href={href}
+                className={`flex items-center gap-2 pl-8 pr-3 py-1.5 rounded-lg text-sm transition ${
+                  active ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white hover:bg-slate-800'
+                }`}>
+                <Icon size={13} />
                 {label}
               </Link>
             )

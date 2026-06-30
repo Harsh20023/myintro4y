@@ -9,7 +9,8 @@
     "seed": "../../node_modules/.bin/ts-node-dev --transpile-only src/seed/admin.ts",
     "seed:services": "../../node_modules/.bin/ts-node-dev --transpile-only src/seed/services.ts",
     "seed:pages": "../../node_modules/.bin/ts-node-dev --transpile-only src/seed/servicePages.ts",
-    "migrate:account-types": "../../node_modules/.bin/ts-node-dev --transpile-only src/seed/migrateAccountTypes.ts"
+    "migrate:account-types": "../../node_modules/.bin/ts-node-dev --transpile-only src/seed/migrateAccountTypes.ts",
+    "seed:hsn": "../../node_modules/.bin/ts-node-dev --transpile-only src/seed/hsnCodes.ts"
   },
   "dependencies": {
     "@types/adm-zip": "^0.5.8",
@@ -23,7 +24,8 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "puppeteer": "^25.1.0",
-    "undici": "^8.4.1"
+    "undici": "^8.4.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

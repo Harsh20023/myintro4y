@@ -16,6 +16,7 @@ import ruleSetsRoutes, { calculate } from './routes/ruleSets'
 import servicesRoutes from './routes/services'
 import usersRoutes       from './routes/users'
 import membershipsRoutes from './routes/memberships'
+import hsnRoutes from './routes/hsn'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
@@ -58,6 +59,7 @@ app.post('/calculate', calculate)
 app.use('/services', servicesRoutes)
 app.use('/users',       usersRoutes)
 app.use('/memberships', membershipsRoutes)
+app.use('/hsn',         hsnRoutes)
 
 connectDB().then(() => {
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`))

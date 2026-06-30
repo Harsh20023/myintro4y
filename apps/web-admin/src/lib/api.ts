@@ -544,6 +544,56 @@ export const servicesApi = {
     }),
 }
 
+// ── HSN / SAC Codes ───────────────────────────────────────────────────────────
+
+export interface HsnTaxDetail {
+  rateOfTax: number
+  effectiveDate: string
+  description: string
+}
+
+export interface HsnCodeRecord {
+  _id: string
+  hsnCode: string
+  type: 'HSN' | 'SAC'
+  description: string
+  chapterNumber: string
+  parentCode: string | null
+  currentRate: number | null
+  currentRateEffectiveDate: string | null
+  taxDetails: HsnTaxDetail[]
+  active: boolean
+  deletedAt: string | null
+  sourceId: string | null
+  lastSyncedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface HsnListResponse {
+  data: HsnCodeRecord[]
+  pagination: { page: number; limit: number; total: number; pages: number }
+}
+
+export const hsnApi = {
+  list: (params?: {
+    type?: string; chapter?: string; rate?: number; q?: string
+    active?: boolean; includeDeleted?: boolean; page?: number; limit?: number
+  }) => {
+    const qs = new URLSearchParams()
+    if (params?.type)                  qs.set('type',           params.type)
+    if (params?.chapter)               qs.set('chapter',        params.chapter)
+    if (params?.rate !== undefined)    qs.set('rate',           String(params.rate))
+    if (params?.q)                     qs.set('q',              params.q)
+    if (params?.active !== undefined)  qs.set('active',         String(params.active))
+    if (params?.includeDeleted)        qs.set('includeDeleted', 'true')
+    if (params?.page)                  qs.set('page',           String(params.page))
+    if (params?.limit)                 qs.set('limit',          String(params.limit))
+    const q = qs.toString()
+    return req<HsnListResponse>(`/hsn${q ? `?${q}` : ''}`)
+  },
+}
+
 // ── Tax Config ────────────────────────────────────────────────────────────────
 
 export interface TaxConfigStatus {

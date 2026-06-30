@@ -110,6 +110,7 @@ function Skeleton() {
 export function HsnFinder() {
   const [query, setQuery]         = useState('')
   const [typeFilter, setType]     = useState<TypeFilter>('')
+  const [searchMode, setSearchMode] = useState<'code' | 'chapter'>('code')
 
   const [results, setResults]     = useState<HsnCodeRecord[]>([])
   const [total, setTotal]         = useState(0)
@@ -121,6 +122,9 @@ export function HsnFinder() {
   const [localQ, setLocalQ]       = useState('')
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Show code-mode toggle only when query is purely numeric
+  const isNumeric = /^\d+$/.test(query.trim())
 
   const filtered = useMemo(() => {
     if (!localQ.trim()) return results
@@ -136,12 +140,14 @@ export function HsnFinder() {
 
   async function runSearch() {
     setLoading(true); setError(''); setSearched(true)
+    const trimmed = query.trim()
     try {
       const res = await hsnApi.list({
-        q:     query.trim() || undefined,
-        type:  typeFilter   || undefined,
-        limit: 200,
-        page:  1,
+        q:       (!isNumeric || searchMode === 'code') ? trimmed || undefined : undefined,
+        chapter: (isNumeric && searchMode === 'chapter') ? trimmed : undefined,
+        type:    typeFilter || undefined,
+        limit:   200,
+        page:    1,
       })
       setResults(res.data)
       setTotal(res.pagination.total)
@@ -194,6 +200,25 @@ export function HsnFinder() {
               </button>
             )}
           </div>
+
+          {/* Code-mode toggle — only shown when query is numeric */}
+          {isNumeric && query.trim() && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-ink-400">Search as:</span>
+              <div className="flex items-center bg-ink-100 rounded-lg p-0.5 gap-0.5">
+                {([['code', 'HSN / SAC Code'], ['chapter', 'Chapter Number']] as ['code' | 'chapter', string][]).map(([m, label]) => (
+                  <button key={m} type="button" onClick={() => setSearchMode(m)}
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150 ${
+                      searchMode === m
+                        ? 'bg-white text-ink-800 shadow-sm'
+                        : 'text-ink-500 hover:text-ink-700'
+                    }`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Type toggle + Search button */}
           <div className="flex items-center justify-between gap-3 flex-wrap">

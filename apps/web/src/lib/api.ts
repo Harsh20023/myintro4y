@@ -74,12 +74,13 @@ export interface HsnListResponse {
 }
 
 export const hsnApi = {
-  list: (params?: { q?: string; type?: string; page?: number; limit?: number }) => {
+  list: (params?: { q?: string; chapter?: string; type?: string; page?: number; limit?: number }) => {
     const qs = new URLSearchParams()
-    if (params?.q)     qs.set('q',     params.q)
-    if (params?.type)  qs.set('type',  params.type)
-    if (params?.page)  qs.set('page',  String(params.page))
-    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.q)       qs.set('q',       params.q)
+    if (params?.chapter) qs.set('chapter', params.chapter)
+    if (params?.type)    qs.set('type',    params.type)
+    if (params?.page)    qs.set('page',    String(params.page))
+    if (params?.limit)   qs.set('limit',   String(params.limit))
     const q = qs.toString()
     return req<HsnListResponse>(`/hsn${q ? `?${q}` : ''}`)
   },

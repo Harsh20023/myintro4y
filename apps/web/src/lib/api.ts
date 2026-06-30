@@ -54,6 +54,37 @@ export const api = {
     }),
 }
 
+// ── HSN / SAC ─────────────────────────────────────────────────────────────────
+
+export interface HsnCodeRecord {
+  _id: string
+  hsnCode: string
+  type: 'HSN' | 'SAC'
+  description: string
+  chapterNumber: string
+  parentCode: string | null
+  currentRate: number | null
+  active: boolean
+  deletedAt: string | null
+}
+
+export interface HsnListResponse {
+  data: HsnCodeRecord[]
+  pagination: { page: number; limit: number; total: number; pages: number }
+}
+
+export const hsnApi = {
+  list: (params?: { q?: string; type?: string; page?: number; limit?: number }) => {
+    const qs = new URLSearchParams()
+    if (params?.q)     qs.set('q',     params.q)
+    if (params?.type)  qs.set('type',  params.type)
+    if (params?.page)  qs.set('page',  String(params.page))
+    if (params?.limit) qs.set('limit', String(params.limit))
+    const q = qs.toString()
+    return req<HsnListResponse>(`/hsn${q ? `?${q}` : ''}`)
+  },
+}
+
 export interface AuthUser {
   id: string
   email: string

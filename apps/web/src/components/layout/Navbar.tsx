@@ -14,6 +14,10 @@ const gstTools = [
   { label: 'GST Return Downloader',   href: '/tools/gst-return-downloader' },
 ]
 
+const otherTools = [
+  { label: 'HSN / SAC Finder', href: '/tools/hsn-finder' },
+]
+
 const incomeTaxSections = [
   {
     heading: 'Documents & Statements',
@@ -104,6 +108,15 @@ export function Navbar() {
                       {t.label}
                     </Link>
                   ))}
+                  <div className="mx-4 my-1.5 h-px bg-ink-100" />
+                  <p className="px-4 pb-1 text-xs font-semibold uppercase tracking-wider text-ink-400">Other Tools</p>
+                  {otherTools.map(t => (
+                    <Link key={t.href} href={t.href}
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-ink-700 hover:bg-ink-50 hover:text-ink-900 transition-colors whitespace-nowrap">
+                      {t.label}
+                    </Link>
+                  ))}
                 </div>
                 <div className="w-px bg-ink-100 my-2" />
                 <div className="min-w-[220px] py-1">
@@ -164,6 +177,13 @@ export function Navbar() {
         <div className="md:hidden border-t border-ink-100 bg-ink-50 px-4 py-3 flex flex-col gap-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 px-3 pt-1 pb-0.5">GST Tools</p>
           {gstTools.map(t => (
+            <Link key={t.href} href={t.href} className="btn-ghost justify-start" onClick={() => setMobileOpen(false)}>
+              {t.label}
+            </Link>
+          ))}
+          <div className="mx-3 my-1 h-px bg-ink-100" />
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 px-3 pb-0.5">Other Tools</p>
+          {otherTools.map(t => (
             <Link key={t.href} href={t.href} className="btn-ghost justify-start" onClick={() => setMobileOpen(false)}>
               {t.label}
             </Link>

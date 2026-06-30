@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { Search, Filter, RefreshCw, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { hsnApi, HsnCodeRecord } from '@/lib/api'
 
@@ -34,6 +34,93 @@ function TypeBadge({ type }: { type: 'HSN' | 'SAC' }) {
   )
 }
 
+// ── Description popup (double-click) ─────────────────────────────────────────
+
+interface PopupState {
+  text: string
+  code: string
+  // bounding rect of the description cell
+  cellTop:   number
+  cellLeft:  number
+  cellWidth: number
+}
+
+function DescriptionPopup({ popup, onClose }: { popup: PopupState; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Align the popup over the description cell, push above if it would clip the bottom
+  const [pos, setPos] = useState({ top: popup.cellTop, left: popup.cellLeft, width: popup.cellWidth })
+
+  useEffect(() => {
+    if (!ref.current) return
+    const popupHeight = ref.current.getBoundingClientRect().height
+    const vh = window.innerHeight
+
+    let top = popup.cellTop
+    // If the popup would overflow the bottom of the viewport, flip it above the cell
+    if (top + popupHeight > vh - 12) top = popup.cellTop - popupHeight + 36
+
+    setPos({ top, left: popup.cellLeft, width: popup.cellWidth })
+  }, [popup.cellTop, popup.cellLeft, popup.cellWidth])
+
+  // Close on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <>
+      {/* Invisible backdrop to catch outside clicks */}
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+
+      {/* Floating card — sits right on top of the description cell */}
+      <div
+        ref={ref}
+        style={{
+          position: 'fixed',
+          top:   pos.top,
+          left:  pos.left,
+          width: pos.width,
+          zIndex: 50,
+          boxShadow: [
+            '0 1px 2px rgba(0,0,0,0.07)',
+            '0 4px 8px rgba(0,0,0,0.10)',
+            '0 16px 32px rgba(0,0,0,0.14)',
+            '0 32px 56px rgba(0,0,0,0.10)',
+            '0 0 0 1px rgba(0,0,0,0.07)',
+          ].join(', '),
+          animation: 'hsn-popup-in 150ms cubic-bezier(0.22,1,0.36,1) forwards',
+        }}
+        className="bg-white rounded-2xl overflow-hidden"
+      >
+        {/* Coloured top bar with code */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-800">
+          <span className="font-mono font-bold text-white text-sm tracking-widest">{popup.code}</span>
+          <button onClick={onClose}
+            className="text-slate-400 hover:text-white transition ml-4 flex-shrink-0">
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Description body */}
+        <div className="px-4 py-4">
+          <p className="text-gray-800 text-sm leading-relaxed">{popup.text}</p>
+        </div>
+      </div>
+
+      {/* Keyframe injected once via a style tag */}
+      <style>{`
+        @keyframes hsn-popup-in {
+          from { opacity: 0; transform: scale(0.93) translateY(6px); }
+          to   { opacity: 1; transform: scale(1)    translateY(0);   }
+        }
+      `}</style>
+    </>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function HsnPage() {
@@ -52,6 +139,20 @@ export default function HsnPage() {
 
   // Client-side secondary filter
   const [localQ, setLocalQ] = useState('')
+
+  // Description popup
+  const [popup, setPopup] = useState<PopupState | null>(null)
+
+  const openPopup = useCallback((e: React.MouseEvent, r: HsnCodeRecord) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    setPopup({
+      text:      r.description,
+      code:      r.hsnCode,
+      cellTop:   rect.top,
+      cellLeft:  rect.left,
+      cellWidth: rect.width,
+    })
+  }, [])
 
   const filtered = useMemo(() => {
     if (!localQ.trim()) return results
@@ -266,9 +367,14 @@ export default function HsnPage() {
                         <TypeBadge type={r.type} />
                       </td>
 
-                      {/* Description — wraps, highlights match */}
+                      {/* Description — double-click to expand */}
                       <td className="px-4 py-3 text-gray-700 max-w-xs lg:max-w-md">
-                        <span className="line-clamp-2 text-sm leading-relaxed">
+                        <span
+                          onDoubleClick={e => openPopup(e, r)}
+                          title="Double-click to read full description"
+                          className="line-clamp-2 text-sm leading-relaxed cursor-pointer select-none
+                                     hover:text-slate-900 transition-colors"
+                        >
                           <Highlight text={r.description} query={localQ} />
                         </span>
                       </td>
@@ -339,6 +445,8 @@ export default function HsnPage() {
           )}
         </div>
       )}
+
+      {popup && <DescriptionPopup popup={popup} onClose={() => setPopup(null)} />}
     </div>
   )
 }

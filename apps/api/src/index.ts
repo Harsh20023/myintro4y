@@ -21,11 +21,15 @@ import hsnRoutes from './routes/hsn'
 const app = express()
 const PORT = process.env.PORT ?? 4000
 const allowedOrigins = [
+  // production
   process.env.FRONTEND_URL ?? 'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:4550',
   'https://conceptra.co.in',
   'https://www.conceptra.co.in',
+  'https://gst.conceptra.co.in',
+  // local dev — always allowed so localhost requests reach the live API
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:4550',
 ]
 
 app.use(cors({

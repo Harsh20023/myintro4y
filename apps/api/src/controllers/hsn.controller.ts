@@ -24,7 +24,10 @@ export const HsnController = {
       if (chapter)           filter.chapterNumber = String(chapter)
       if (rate !== undefined && rate !== '') filter.currentRate = Number(rate)
       if (active !== undefined) filter.active = active === 'true'
-      if (q)                 filter.description = { $regex: String(q), $options: 'i' }
+      if (q)                 filter.$or = [
+        { hsnCode:    { $regex: String(q), $options: 'i' } },
+        { description: { $regex: String(q), $options: 'i' } },
+      ]
 
       const pageNum  = Math.max(1, parseInt(String(page  ?? '1'),   10) || 1)
       const rawLimit = parseInt(String(limit ?? '200'), 10)

@@ -18,6 +18,7 @@ router.delete('/chapters/:number',  ...guard, ChaptersController.remove)
 // GET ?type=HSN|SAC&chapter=01&rate=18&q=animal&active=true&page=1&limit=200
 router.get   ('/',                  HsnController.list)
 router.get   ('/:code/children',    HsnController.getChildren)
+router.get   ('/:code/history',     HsnController.getHistory)
 router.get   ('/:code',             HsnController.getOne)
 router.post  ('/',                  ...guard, HsnController.create)
 router.put   ('/:code',             ...guard, HsnController.update)

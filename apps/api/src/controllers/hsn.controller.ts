@@ -1,18 +1,39 @@
 import { Request, Response } from 'express'
-import { HsnCode } from '../models/HsnCode'
+import { HsnCode, IHsnCode } from '../models/HsnCode'
 import { HsnChapter } from '../models/HsnChapter'
+import { HsnHistory, IHsnDiff } from '../models/HsnHistory'
+import { AuthRequest } from '../middleware/authenticate'
 
 const ALLOWED_LIMITS = [200, 300, 500]
 
+const TRACKED_FIELDS: (keyof IHsnCode)[] = [
+  'type', 'description', 'chapterNumber', 'parentCode',
+  'currentRate', 'currentRateEffectiveDate', 'taxDetails', 'active',
+  'deletedAt',
+]
+
 function isDuplicateKeyError(err: unknown): boolean {
   return typeof err === 'object' && err !== null && (err as { code?: number }).code === 11000
+}
+
+function computeDiff(before: Record<string, unknown>, after: Record<string, unknown>): IHsnDiff[] {
+  const diff: IHsnDiff[] = []
+  for (const field of TRACKED_FIELDS) {
+    const a = JSON.stringify(before[field] ?? null)
+    const b = JSON.stringify(after[field]  ?? null)
+    if (a !== b) diff.push({ field, from: before[field] ?? null, to: after[field] ?? null })
+  }
+  return diff
+}
+
+function toPlain(doc: IHsnCode): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(doc.toObject ? doc.toObject() : doc))
 }
 
 // ─── codes ────────────────────────────────────────────────────────────────────
 
 export const HsnController = {
 
-  // GET /hsn?type=HSN&chapter=01&rate=18&q=animal&active=true&page=1&limit=200
   async list(req: Request, res: Response) {
     try {
       const { type, chapter, rate, q, active, includeDeleted, page, limit } = req.query
@@ -34,22 +55,13 @@ export const HsnController = {
       const limitNum = ALLOWED_LIMITS.includes(rawLimit) ? rawLimit : 200
 
       const [docs, total] = await Promise.all([
-        HsnCode.find(filter)
-          .sort({ hsnCode: 1 })
-          .skip((pageNum - 1) * limitNum)
-          .limit(limitNum)
-          .lean(),
+        HsnCode.find(filter).sort({ hsnCode: 1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
         HsnCode.countDocuments(filter),
       ])
 
       return res.json({
         data: docs,
-        pagination: {
-          page:  pageNum,
-          limit: limitNum,
-          total,
-          pages: Math.ceil(total / limitNum),
-        },
+        pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
       })
     } catch {
       return res.status(500).json({ message: 'Server error' })
@@ -66,22 +78,34 @@ export const HsnController = {
     }
   },
 
-  // GET /hsn/:code/children — direct children in the hierarchy
   async getChildren(req: Request, res: Response) {
     try {
-      const docs = await HsnCode.find({
-        parentCode: req.params.code,
-        deletedAt:  null,
-      }).sort({ hsnCode: 1 }).lean()
+      const docs = await HsnCode.find({ parentCode: req.params.code, deletedAt: null }).sort({ hsnCode: 1 }).lean()
       return res.json(docs)
     } catch {
       return res.status(500).json({ message: 'Server error' })
     }
   },
 
-  async create(req: Request, res: Response) {
+  async getHistory(req: Request, res: Response) {
+    try {
+      const entries = await HsnHistory.find({ hsnCode: req.params.code }).sort({ changedAt: -1 }).lean()
+      return res.json(entries)
+    } catch {
+      return res.status(500).json({ message: 'Server error' })
+    }
+  },
+
+  async create(req: AuthRequest, res: Response) {
     try {
       const doc = await HsnCode.create(req.body)
+      await HsnHistory.create({
+        hsnCode:   doc.hsnCode,
+        action:    'created',
+        changedBy: req.user?.email ?? 'unknown',
+        snapshot:  toPlain(doc),
+        diff:      [],
+      })
       return res.status(201).json(doc)
     } catch (err) {
       if (isDuplicateKeyError(err)) return res.status(409).json({ message: 'Code already exists' })
@@ -89,44 +113,81 @@ export const HsnController = {
     }
   },
 
-  async update(req: Request, res: Response) {
+  async update(req: AuthRequest, res: Response) {
     try {
+      const before = await HsnCode.findOne({ hsnCode: req.params.code })
+      if (!before) return res.status(404).json({ message: 'Code not found' })
+
       const doc = await HsnCode.findOneAndUpdate(
         { hsnCode: req.params.code },
         { $set: req.body },
         { new: true, runValidators: true }
       )
       if (!doc) return res.status(404).json({ message: 'Code not found' })
+
+      const diff = computeDiff(toPlain(before), toPlain(doc))
+      if (diff.length > 0) {
+        await HsnHistory.create({
+          hsnCode:   doc.hsnCode,
+          action:    'updated',
+          changedBy: req.user?.email ?? 'unknown',
+          snapshot:  toPlain(doc),
+          diff,
+        })
+      }
+
       return res.json(doc)
     } catch (err) {
       return res.status(400).json({ message: err instanceof Error ? err.message : 'Bad request' })
     }
   },
 
-  // Soft delete — sets deletedAt + active: false
-  async softRemove(req: Request, res: Response) {
+  async softRemove(req: AuthRequest, res: Response) {
     try {
+      const before = await HsnCode.findOne({ hsnCode: req.params.code, deletedAt: null })
+      if (!before) return res.status(404).json({ message: 'Code not found or already deleted' })
+
       const doc = await HsnCode.findOneAndUpdate(
         { hsnCode: req.params.code, deletedAt: null },
         { $set: { deletedAt: new Date(), active: false } },
         { new: true }
       )
       if (!doc) return res.status(404).json({ message: 'Code not found or already deleted' })
+
+      await HsnHistory.create({
+        hsnCode:   doc.hsnCode,
+        action:    'deleted',
+        changedBy: req.user?.email ?? 'unknown',
+        snapshot:  toPlain(doc),
+        diff:      computeDiff(toPlain(before), toPlain(doc)),
+      })
+
       return res.json({ message: 'Deleted', doc })
     } catch {
       return res.status(500).json({ message: 'Server error' })
     }
   },
 
-  // POST /hsn/:code/restore
-  async restore(req: Request, res: Response) {
+  async restore(req: AuthRequest, res: Response) {
     try {
+      const before = await HsnCode.findOne({ hsnCode: req.params.code })
+      if (!before) return res.status(404).json({ message: 'Code not found' })
+
       const doc = await HsnCode.findOneAndUpdate(
         { hsnCode: req.params.code },
         { $set: { deletedAt: null, active: true } },
         { new: true }
       )
       if (!doc) return res.status(404).json({ message: 'Code not found' })
+
+      await HsnHistory.create({
+        hsnCode:   doc.hsnCode,
+        action:    'restored',
+        changedBy: req.user?.email ?? 'unknown',
+        snapshot:  toPlain(doc),
+        diff:      computeDiff(toPlain(before), toPlain(doc)),
+      })
+
       return res.json(doc)
     } catch {
       return res.status(500).json({ message: 'Server error' })
@@ -138,7 +199,6 @@ export const HsnController = {
 
 export const ChaptersController = {
 
-  // GET /hsn/chapters?type=HSN
   async list(req: Request, res: Response) {
     try {
       const filter: Record<string, unknown> = {}

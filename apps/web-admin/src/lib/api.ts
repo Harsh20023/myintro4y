@@ -575,6 +575,38 @@ export interface HsnListResponse {
   pagination: { page: number; limit: number; total: number; pages: number }
 }
 
+// ── HSN History ───────────────────────────────────────────────────────────────
+
+export type HsnAction = 'created' | 'updated' | 'deleted' | 'restored'
+
+export interface HsnHistoryDiff {
+  field: string
+  from:  unknown
+  to:    unknown
+}
+
+export interface HsnHistoryEntry {
+  _id:       string
+  hsnCode:   string
+  action:    HsnAction
+  changedBy: string
+  changedAt: string
+  snapshot:  HsnCodeRecord
+  diff:      HsnHistoryDiff[]
+}
+
+export type CreateHsnPayload = {
+  hsnCode: string
+  type: 'HSN' | 'SAC'
+  description: string
+  chapterNumber: string
+  parentCode?: string | null
+  currentRate?: number | null
+  currentRateEffectiveDate?: string | null
+  taxDetails?: HsnTaxDetail[]
+  active?: boolean
+}
+
 export const hsnApi = {
   list: (params?: {
     type?: string; chapter?: string; rate?: number; q?: string
@@ -592,6 +624,38 @@ export const hsnApi = {
     const q = qs.toString()
     return req<HsnListResponse>(`/hsn${q ? `?${q}` : ''}`)
   },
+
+  getOne: (code: string) =>
+    req<HsnCodeRecord>(`/hsn/${code}`),
+
+  create: (body: CreateHsnPayload) =>
+    req<HsnCodeRecord>('/hsn', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: authHeaders(),
+    }),
+
+  update: (code: string, body: Partial<Omit<CreateHsnPayload, 'hsnCode'>>) =>
+    req<HsnCodeRecord>(`/hsn/${code}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+      headers: authHeaders(),
+    }),
+
+  remove: (code: string) =>
+    req<{ message: string; doc: HsnCodeRecord }>(`/hsn/${code}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }),
+
+  restore: (code: string) =>
+    req<HsnCodeRecord>(`/hsn/${code}/restore`, {
+      method: 'POST',
+      headers: authHeaders(),
+    }),
+
+  getHistory: (code: string) =>
+    req<HsnHistoryEntry[]>(`/hsn/${code}/history`),
 }
 
 // ── Tax Config ────────────────────────────────────────────────────────────────
